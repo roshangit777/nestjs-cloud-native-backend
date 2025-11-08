@@ -1,6 +1,6 @@
-import path from 'path';
-import sharp from 'sharp';
-import { parentPort, workerData } from 'worker_threads';
+import path from "path";
+import sharp from "sharp";
+import { parentPort, workerData } from "worker_threads";
 
 interface WorkerData {
   tempPath: string;
@@ -10,11 +10,8 @@ async function compressImage(): Promise<void> {
   const { tempPath } = workerData as WorkerData;
   const outputPath = tempPath.replace(
     path.extname(tempPath),
-    '-compressed.jpg',
+    "-compressed.jpg"
   );
-
-  console.log('tempPath==========>', tempPath);
-  console.log('outputPath==========>', outputPath);
 
   await sharp(tempPath)
     .resize({ width: 1080 })
@@ -27,14 +24,14 @@ async function compressImage(): Promise<void> {
   sharp.simd(false);
 
   if (!parentPort) {
-    throw new Error('Error in parentPort');
+    throw new Error("Error in parentPort");
   }
   parentPort.postMessage({ success: true, path: outputPath });
 }
 
 compressImage().catch((err) => {
   if (!parentPort) {
-    throw new Error('Error in parentPort');
+    throw new Error("Error in parentPort");
   }
   parentPort.postMessage({ success: false, error: err.message });
 });

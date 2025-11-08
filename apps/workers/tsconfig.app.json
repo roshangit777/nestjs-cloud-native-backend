@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/apps/workers",
+    "rootDir": "./",
+    "module": "nodenext",
+    "target": "es2021"
+  },
+  "include": ["**/*.ts"]
+}
+
+/* cmd: tsc -p apps/workers/tsconfig.app.json */

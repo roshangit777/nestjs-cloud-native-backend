@@ -78,7 +78,7 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email, role: user.role };
     /*  await this.userEventService.recordLogin(user.id); */
     const access_token = await this.jwtService.signAsync(payload, {
-      expiresIn: "3m",
+      expiresIn: "30m",
     });
     const refresh_token = await this.jwtService.signAsync(
       { id: payload.sub },
@@ -101,7 +101,7 @@ export class AuthService {
     }
     const payload = { sub: user.id, email: user.email, role: user?.role };
     const access_token = await this.jwtService.signAsync(payload, {
-      expiresIn: "3m",
+      expiresIn: "30m",
     });
     return access_token;
   }
@@ -129,7 +129,7 @@ export class AuthService {
     console.log('token:', await this.jwtService.signAsync(newPayload)); */
     /* await this.userEventService.recordLogin(user.id); */
     const access_token = await this.jwtService.signAsync(payload, {
-      expiresIn: "3m",
+      expiresIn: "30m",
     });
     const refresh_token = await this.jwtService.signAsync(
       { id: user.id },

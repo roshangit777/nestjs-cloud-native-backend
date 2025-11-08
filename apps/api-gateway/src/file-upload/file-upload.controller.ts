@@ -41,9 +41,6 @@ export class FileUploadController {
     if (!file) {
       throw new RpcException({ status: 400, message: "File needed" });
     }
-    console.log("1,file=====>", file);
-    console.log("1,uploadFile=====>", uploadfileDto);
-    console.log("1,user=====>", user);
 
     return this.fileUploadClient.send("file.upload", {
       file,

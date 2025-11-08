@@ -41,23 +41,19 @@ export class FileUploadService {
       if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
 
       const tempPath = path.join(tempDir, `${Date.now()}-${file.originalname}`);
-      /* console.log('file----------->', file);
-      console.log('fileBuffer----------->', file.buffer);
-      console.log('tempDir==========>', tempDir);
-      console.log('tempPath==========>', tempPath); */
       uploadedImagePath = tempPath;
       const realBuffer = Buffer.isBuffer(file.buffer)
         ? file.buffer
         : Buffer.from(file.buffer.data);
       fs.writeFileSync(tempPath, realBuffer);
 
-      const workerPath: string = join(
-        __dirname,
+      const workerPath = join(
+        process.cwd(),
+        "dist",
+        "apps",
         "workers",
         "imageCompression.js"
       );
-
-      console.log("workerPath=========>", workerPath);
 
       const worker = new Worker(workerPath, {
         workerData: { tempPath },
