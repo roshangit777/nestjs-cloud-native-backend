@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package auth;
+
+// Service definition
+service AuthService {
+  rpc UserRegister (UserRegisterRequest) returns (UserRegisterResponse);
+  rpc UserLogin (UserLoginRequest) returns (UserLoginResponse);
+  rpc Refresh (RefreshRequest) returns (RefreshResponse);
+  rpc AdminRegister (AdminRegisterRequest) returns (AdminRegisterResponse);
+  rpc AdminLogin (AdminLoginRequest) returns (AdminLoginResponse);
+}
+
+// User model
+message User {
+  int32 id = 1;
+  string name = 2;
+  string email = 3;
+  string role = 4;
+  string createdAt = 5;
+  string updatedAt = 6;
+}
+
+// JWT payload-like structure
+message ProfileUserStructure {
+  int32 sub = 1;
+  string email = 2;
+  string role = 3;
+}
+
+// Register
+message UserRegisterRequest {
+  string name = 1;
+  string email = 2;
+  string password = 3;
+}
+
+message UserRegisterResponse {
+  string message = 1;
+  User user = 2;
+}
+
+// Login
+message UserLoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message UserLoginResponse {
+ string accessToken = 1;
+ string refreshToken = 2;
+}
+
+// Token refresh
+message RefreshRequest {
+  string token = 1;
+}
+
+message RefreshResponse {
+  string accessToken = 1;
+}
+
+// Admin
+message AdminRegisterRequest {
+  string name = 1;
+  string email = 2;
+  string password = 3;
+}
+
+message AdminRegisterResponse {
+  string message = 1;
+  User user = 2;
+}
+
+message AdminLoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message AdminLoginResponse {
+  string accessToken = 1;
+  string refreshToken = 2;
+}

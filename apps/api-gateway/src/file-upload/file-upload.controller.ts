@@ -1,9 +1,11 @@
+import { status } from "@grpc/grpc-js";
 import {
   Body,
   Controller,
   Delete,
   Get,
   Inject,
+  OnModuleInit,
   ParseUUIDPipe,
   Post,
   Query,
@@ -11,12 +13,14 @@ import {
   UseGuards,
   UseInterceptors,
 } from "@nestjs/common";
-import { ClientProxy, RpcException } from "@nestjs/microservices";
+import type { ClientGrpc } from "@nestjs/microservices";
+import { RpcException } from "@nestjs/microservices";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { CurrentUser } from "apps/common/decorators/current-user.decorator";
 import { AuthGuard } from "apps/common/guards/auth.guard";
 
 interface AuthorData {
+  name: string;
   sub: number;
   email: string;
   role: string;
@@ -25,33 +29,41 @@ interface AuthorData {
 }
 
 @Controller("file-upload")
-export class FileUploadController {
+export class FileUploadController implements OnModuleInit {
+  private fileUplaodServices: any;
   constructor(
-    @Inject("FILE_UPLOAD_CLIENT") private fileUploadClient: ClientProxy
+    @Inject("FILE_UPLOAD_CLIENT") private fileUploadClient: ClientGrpc
   ) {}
+
+  onModuleInit() {
+    this.fileUplaodServices =
+      this.fileUploadClient.getService("fileUploadService");
+  }
 
   @Post()
   @UseGuards(AuthGuard)
   @UseInterceptors(FileInterceptor("file"))
   uploadFile(
     @UploadedFile() file: Express.Multer.File,
-    @Body() uploadfileDto: string | undefined,
+    @Body() uploadfileDto: { description: string | undefined },
     @CurrentUser() user: AuthorData
   ) {
     if (!file) {
-      throw new RpcException({ status: 400, message: "File needed" });
+      throw new RpcException({
+        code: status.INVALID_ARGUMENT,
+        message: "File needed",
+      });
     }
-
-    return this.fileUploadClient.send("file.upload", {
+    return this.fileUplaodServices.UploadFile({
       file,
-      uploadfileDto,
+      description: uploadfileDto.description,
       user,
     });
   }
 
   @Get("get-files")
   getFile() {
-    return this.fileUploadClient.send("file.findAll", {});
+    return this.fileUplaodServices.GetAllFile({});
   }
 
   @UseGuards(AuthGuard)
@@ -59,10 +71,10 @@ export class FileUploadController {
   deleteFile(@Query("id", ParseUUIDPipe) id: string) {
     if (!id) {
       throw new RpcException({
-        status: 400,
+        code: status.INVALID_ARGUMENT,
         message: "Id needed to delete the File",
       });
     }
-    return this.fileUploadClient.send("file.delete", id);
+    return this.fileUplaodServices.DeleteFile({ id });
   }
 }

@@ -4,6 +4,7 @@ import { LoginHistory } from "./entity/login-history.entity";
 import { Repository } from "typeorm";
 import { RpcException } from "@nestjs/microservices";
 import { UserDetails } from "./interfaces/userDetails.interface";
+import { status } from "@grpc/grpc-js";
 
 @Injectable()
 export class LoginHistoryModuleService {
@@ -20,25 +21,21 @@ export class LoginHistoryModuleService {
     await this.loginHistoryRepository.save(login);
   }
 
-  async getUserLoginHistory(userId: number | undefined): Promise<any[]> {
-    const id =
-      typeof userId === "object" && Object.keys(userId).length === 0
-        ? null
-        : Number(userId);
-    if (!id) {
-      return await this.loginHistoryRepository.find({});
-    } else {
-      const history = await this.loginHistoryRepository.find({
-        where: { user: id },
-        select: ["loginTime"],
+  async getAllUserLoginHistory(): Promise<any[]> {
+    return await this.loginHistoryRepository.find({});
+  }
+
+  async getOneUserLoginHistory(id: number): Promise<any[]> {
+    const history = await this.loginHistoryRepository.find({
+      where: { user: id },
+      select: ["loginTime"],
+    });
+    if (!history || history.length === 0) {
+      throw new RpcException({
+        code: status.NOT_FOUND,
+        message: `Login record of the ${id} not found`,
       });
-      if (!history || history.length === 0) {
-        throw new RpcException({
-          status: 404,
-          message: `Login record of the ${id} not found`,
-        });
-      }
-      return history.map((item) => item.loginTime);
     }
+    return history.map((item) => item.loginTime);
   }
 }

@@ -1,3 +1,4 @@
+import { status } from "@grpc/grpc-js";
 import { Inject, Injectable } from "@nestjs/common";
 import { RpcException } from "@nestjs/microservices";
 import { UploadApiErrorResponse, UploadApiResponse } from "cloudinary";
@@ -19,7 +20,7 @@ export class CloudinaryService {
           if (error)
             reject(
               new RpcException({
-                status: 500,
+                code: status.INTERNAL,
                 message: `Error in Cloudinary Service: ${error.message}`,
               })
             );

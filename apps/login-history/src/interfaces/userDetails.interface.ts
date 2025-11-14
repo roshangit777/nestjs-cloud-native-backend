@@ -1,6 +1,6 @@
 export interface UserDetails {
-  id: number;
   name: string;
+  id: number;
   email: string;
   role: string;
 }

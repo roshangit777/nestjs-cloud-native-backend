@@ -1,9 +1,11 @@
+import { status } from "@grpc/grpc-js";
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { RpcException } from "@nestjs/microservices";
 import { Request } from "express";
 
 interface Payload {
+  name: string;
   sub: number;
   email: string;
   role: string;
@@ -27,26 +29,36 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<AuthRequest>();
     const token = this.extractTokenFromHeader(request);
     if (!token) {
-      throw new RpcException({ status: 401, message: "Token missing" });
+      throw new RpcException({
+        code: status.NOT_FOUND,
+        message: "Token missing",
+      });
     }
 
     try {
       const secret = "jwtsecret";
-      if (!secret) throw new Error("JWT_SECRET not defined");
+      if (!secret)
+        throw new RpcException({
+          code: status.INTERNAL,
+          message: "JWT_SECRET not defined",
+        });
 
       const payload: Payload = await this.jwtService.verifyAsync(token, {
         secret,
       });
 
       if (!payload) {
-        throw new RpcException({ status: 401, message: "Invalid Token" });
+        throw new RpcException({
+          code: status.UNAUTHENTICATED,
+          message: "Invalid Token",
+        });
       }
       // assign payload safely
       request.user = payload;
     } catch (error) {
       if (error) {
         throw new RpcException({
-          status: 401,
+          code: status.UNAUTHENTICATED,
           message: "Invalid Token or Expired Token",
         });
       }
@@ -58,9 +70,13 @@ export class AuthGuard implements CanActivate {
   private extractTokenFromHeader(request: Request): string | undefined {
     // NestJS automatically parses cookies if you use cookie-parser
     // so `request.cookies` will be available
-    const authHeader = request.headers.authorization;
-    if (!authHeader) return undefined;
-    const [type, token] = authHeader.split(" ");
-    return type === "Bearer" ? token : undefined;
+    try {
+      const authHeader = request.headers.authorization;
+      if (!authHeader) return undefined;
+      const [type, token] = authHeader.split(" ");
+      return type === "Bearer" ? token : undefined;
+    } catch (error) {
+      throw new RpcException({ code: status.INTERNAL, message: error.message });
+    }
   }
 }

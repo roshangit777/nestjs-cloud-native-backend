@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package fileUpload;
+
+service fileUploadService {
+  rpc UploadFile (UploadFileRequest) returns (UploadFileResponse);
+  rpc GetAllFile (GetAllFileRequest) returns (GetAllFileResponse);
+  rpc DeleteFile (DeleteRequest) returns (DeleteResponse);
+}
+
+message FileData {
+  string fieldname = 1;
+  string originalname = 2;
+  string encoding = 3;
+  string mimetype = 4;
+  bytes buffer = 5;  // the actual file content
+  int32 size = 6;
+}
+
+message Author {
+  string name = 1;
+  string sub = 2;
+  string email = 3;
+  string role = 4;
+  string iat = 5;
+  string exp = 6;
+}
+
+message UploadFileRequest {
+  FileData file = 1;
+  string description = 2;
+  Author user = 3;
+}
+
+message UploaderDetails {
+  int32 id = 1;                
+  string name = 2;
+  string email = 3;
+  string role = 4;          
+}
+
+message UploadFileResponse {
+  string id = 1;
+  string originalName = 2;
+  string mimeType = 3;
+  string size = 4;
+  string url = 5;
+  string publicId = 6;
+  string description = 7;
+  string uploader = 8;
+  UploaderDetails userDetails = 9;
+  string createdAt = 10;
+}
+
+message GetAllFileRequest {}
+
+message GetAllFileResponse {
+  repeated UploadFileResponse files = 1;
+}
+
+message DeleteRequest {
+  string id = 1;
+}
+
+message DeleteResponse {
+  string message = 1;
+}

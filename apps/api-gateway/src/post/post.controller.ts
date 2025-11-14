@@ -4,17 +4,20 @@ import {
   Delete,
   Get,
   Inject,
+  OnModuleInit,
   Param,
   Post,
   Put,
   Query,
   UseGuards,
 } from "@nestjs/common";
-import { ClientProxy, RpcException } from "@nestjs/microservices";
+import { RpcException } from "@nestjs/microservices";
+import type { ClientGrpc } from "@nestjs/microservices";
 import { FindPostsQueryDto } from "./dto/find-posts-query.dto";
 import { AuthGuard } from "apps/common/guards/auth.guard";
 import { PostDto } from "./dto/post-dto";
 import { CurrentUser } from "apps/common/decorators/current-user.decorator";
+import { status } from "@grpc/grpc-js";
 
 interface UserPayload {
   sub: number;
@@ -23,17 +26,22 @@ interface UserPayload {
 }
 
 @Controller("post")
-export class PostController {
-  constructor(@Inject("POST_CLIENT") private postClient: ClientProxy) {}
+export class PostController implements OnModuleInit {
+  private postServices: any;
+  constructor(@Inject("POST_CLIENT") private postClient: ClientGrpc) {}
+
+  onModuleInit() {
+    this.postServices = this.postClient.getService("PostService");
+  }
 
   @Get()
   getAllPost(@Query() query: FindPostsQueryDto) {
-    return this.postClient.send("post.findAll", query);
+    return this.postServices.GetAllPost(query);
   }
 
   @Get(":id")
   getOnePost(@Param("id") id: number) {
-    return this.postClient.send("post.findOne", id);
+    return this.postServices.GetOnePost({ id: Number(id) });
   }
 
   @UseGuards(AuthGuard)
@@ -41,31 +49,40 @@ export class PostController {
   createOnePost(@Body() postData: PostDto, @CurrentUser() user: UserPayload) {
     if (!postData.title || !postData.content) {
       throw new RpcException({
-        status: 404,
+        code: status.NOT_FOUND,
         message: "Title and Content should not be empty",
       });
     }
-    return this.postClient.send("post.create", { postData, user });
+    return this.postServices.CreatePost({ postData, user });
   }
 
   @UseGuards(AuthGuard)
   @Put("update/:id")
-  updatePost(@Param("id") id: number, @Body() postData: PostDto) {
+  updatePost(@Param("id") id: string, @Body() postData: PostDto) {
     if (!id) {
-      throw new RpcException({ status: 400, message: "Id should be valid" });
+      throw new RpcException({
+        code: status.INVALID_ARGUMENT,
+        message: "Id should be valid",
+      });
     }
     if (!postData.title || !postData.content) {
-      throw new RpcException({ status: 400, message: "Id should be valid" });
+      throw new RpcException({
+        code: status.INVALID_ARGUMENT,
+        message: "Id should be valid",
+      });
     }
-    return this.postClient.send("post.update", { id, postData });
+    return this.postServices.UpdatePost({ id, postData });
   }
 
   @UseGuards(AuthGuard)
   @Delete("delete")
   deletePost(@Query("id") id: number) {
     if (!id) {
-      throw new RpcException({ status: 400, message: "Id should be valid" });
+      throw new RpcException({
+        code: status.INVALID_ARGUMENT,
+        message: "Id should be valid",
+      });
     }
-    return this.postClient.send("post.delete", id);
+    return this.postServices.DeletePost({ id: Number(id) });
   }
 }

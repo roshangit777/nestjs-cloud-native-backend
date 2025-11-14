@@ -2,7 +2,7 @@ import { NestFactory } from "@nestjs/core";
 import { ApiGatewayModule } from "./api-gateway.module";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
-import { RpcExceptionFilter } from "../../common/filters/global.exception";
+import { GrpcToHttpInterceptor } from "../../common/filters/global.exception";
 
 async function bootstrap() {
   const app = await NestFactory.create(ApiGatewayModule);
@@ -17,7 +17,7 @@ async function bootstrap() {
   app.use(cookieParser());
   //Helmet helps protect the app from common web vulnerabilities by setting various HTTP security headers automatically.
   app.use(helmet());
-  app.useGlobalFilters(new RpcExceptionFilter());
+  app.useGlobalInterceptors(new GrpcToHttpInterceptor());
   await app.listen(process.env.port ?? 3000);
 }
 bootstrap();

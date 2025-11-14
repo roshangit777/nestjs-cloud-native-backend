@@ -7,6 +7,7 @@ import { JwtModule } from "@nestjs/jwt";
 /* import { EventsModule } from "src/events/events.module"; */
 import { AppModule } from "./app.module";
 import { ClientsModule, Transport } from "@nestjs/microservices";
+import { join } from "path";
 
 @Module({
   imports: [
@@ -15,8 +16,12 @@ import { ClientsModule, Transport } from "@nestjs/microservices";
     ClientsModule.register([
       {
         name: "LOGIN_HISTORY_CLIENT",
-        transport: Transport.TCP,
-        options: { port: 3004 },
+        transport: Transport.GRPC,
+        options: {
+          package: "history",
+          protoPath: join(process.cwd(), "proto/history.proto"),
+          url: "0.0.0.0:50054",
+        },
       },
     ]),
     JwtModule.register({

@@ -1,63 +1,48 @@
 import {
-  ArgumentsHost,
-  Catch,
-  ExceptionFilter,
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
   HttpException,
-  InternalServerErrorException,
 } from "@nestjs/common";
-import { RpcException } from "@nestjs/microservices";
+import { Observable, throwError } from "rxjs";
+import { catchError } from "rxjs/operators";
+import { status } from "@grpc/grpc-js";
 
-@Catch()
-export class RpcExceptionFilter implements ExceptionFilter {
-  catch(exception: any, host: ArgumentsHost) {
-    const ctx = host.switchToHttp();
-    const response = ctx.getResponse();
+@Injectable()
+export class GrpcToHttpInterceptor implements NestInterceptor {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    return next.handle().pipe(
+      catchError((err) => {
+        const httpError = this.mapGrpcErrorToHttp(err);
+        return throwError(() => httpError);
+      })
+    );
+  }
 
-    let status = 500;
-    let message = "Something went wrong";
+  private mapGrpcErrorToHttp(err: any): HttpException {
+    const grpcCode = err.code;
 
-    // 1️⃣ If it’s an HttpException (thrown in gateway itself)
-    if (exception instanceof HttpException) {
-      status = exception.getStatus();
-      const res = exception.getResponse();
-      message =
-        (res as any)?.message || (typeof res === "string" ? res : message);
-    }
+    const map = {
+      [status.NOT_FOUND]: 404,
+      [status.INVALID_ARGUMENT]: 400,
+      [status.UNAUTHENTICATED]: 401,
+      [status.PERMISSION_DENIED]: 403,
+      [status.ALREADY_EXISTS]: 409,
+      [status.FAILED_PRECONDITION]: 412,
+      [status.UNIMPLEMENTED]: 501,
+      [status.UNAVAILABLE]: 503,
+      [status.INTERNAL]: 500,
+    };
 
-    // 2️⃣ If it’s an RpcException (from microservice)
-    else if (exception instanceof RpcException) {
-      const error = exception.getError() as any;
-      status = error?.statusCode || error?.status || 500;
-      message = error?.message || "Something went wrong";
-    }
+    const httpStatus = map[grpcCode] || 500;
 
-    // 3️⃣ If it’s a plain serialized object (common in your case)
-    else if (typeof exception === "object") {
-      status =
-        exception?.statusCode ||
-        exception?.status ||
-        exception?.response?.statusCode ||
-        500;
-
-      // handle message safely
-      message =
-        exception?.message ||
-        exception?.response?.message ||
-        exception?.response?.error ||
-        "Something went wrong";
-    }
-
-    // 4️⃣ Fallback (string or unknown)
-    else if (typeof exception === "string") {
-      message = exception;
-    }
-
-    // force numeric status
-    if (isNaN(status)) status = 500;
-
-    response.status(Number(status)).json({
-      statusCode: Number(status),
-      message,
-    });
+    return new HttpException(
+      {
+        statusCode: httpStatus,
+        message: err.details || "gRPC error",
+      },
+      httpStatus
+    );
   }
 }

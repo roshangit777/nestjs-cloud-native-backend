@@ -54,3 +54,8 @@ jest-test-results.json
 # Optional: ignore local scripts or playgrounds
 scripts/local/
 playground/
+
+# self defined
+
+.txt
+instructions.txt

@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package history;
+
+service loginHistory {
+  rpc AddLoginHistory(AddLoginHistoryRequest) returns (AddLoginHistoryResponse);
+  rpc GetAllLoginHistory(GetAllLoginHistoryRequest) returns (GetAllLoginHistoryResponse);
+  rpc GetOneLoginHistory(GetOneLoginHistoryRequest) returns (GetOneLoginHistoryResponse);
+}
+
+
+message AddLoginHistoryRequest {
+  int32 id = 1;
+  string name = 2;
+  string email = 3;
+  string role = 4;
+}
+
+message AddLoginHistoryResponse {}
+
+message GetAllLoginHistoryRequest {}
+
+message User {
+  int32 id = 1;
+  string name = 2;
+  string email = 3;
+  string role = 4;
+}
+
+message UserHistory {
+  int32 id = 1;
+  int32 user = 2;
+  User userDetails = 3;
+  string loginTime = 4;
+}
+
+message GetAllLoginHistoryResponse {
+  repeated UserHistory history = 1;
+}
+
+message GetOneLoginHistoryRequest {
+  int32 id = 1;
+}
+
+message GetOneLoginHistoryResponse {
+  repeated string result = 1;
+}

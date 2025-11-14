@@ -1,3 +1,4 @@
+import { status } from "@grpc/grpc-js";
 import { Injectable } from "@nestjs/common";
 import { RpcException } from "@nestjs/microservices";
 import { ThrottlerException, ThrottlerGuard } from "@nestjs/throttler";
@@ -19,7 +20,7 @@ export class LoginThrottlerGuard extends ThrottlerGuard {
 
   protected throwThrottlingException(): Promise<void> {
     throw new RpcException({
-      status: 429,
+      code: status.PERMISSION_DENIED,
       message: "Too many attempts. Please try again after 1 minute",
     });
   }

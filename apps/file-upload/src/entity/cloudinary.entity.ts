@@ -9,7 +9,6 @@ import {
 export class File {
   @PrimaryGeneratedColumn("uuid")
   id: string;
-
   @Column()
   originalName: string;
   @Column()
@@ -24,6 +23,8 @@ export class File {
   description: string;
   @Column()
   uploader: number;
+  @Column({ type: "jsonb", nullable: true })
+  userDetails: { id: number; name: string; email: string; role: string };
   @CreateDateColumn()
   createdAt: Date;
 }

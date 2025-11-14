@@ -8,6 +8,7 @@ import type { Cache } from "cache-manager";
 import { RpcException } from "@nestjs/microservices";
 import { Posts } from "./entity/post.entity";
 import { PaginatedResponse } from "./entity/paginated-response.interface";
+import { status } from "@grpc/grpc-js";
 
 interface AuthorData {
   sub: number;
@@ -102,11 +103,10 @@ export class PostService {
   async findOnePost(id: number) {
     const post = await this.usePostsRepository.findOne({
       where: { id },
-      /* relations: ["author"], */
     });
     if (!post) {
       throw new RpcException({
-        status: 404,
+        code: status.NOT_FOUND,
         message: `Post with ID ${id} not found`,
       });
     }
@@ -134,14 +134,20 @@ export class PostService {
     if (postData.title && !postData.content) {
       const post = await this.usePostsRepository.findOne({ where: { id: id } });
       if (!post) {
-        throw new RpcException({ status: 404, message: "Post doesn't exist" });
+        throw new RpcException({
+          code: status.NOT_FOUND,
+          message: "Post doesn't exist",
+        });
       }
       await this.usePostsRepository.update({ id }, { title: postData.title });
       return { message: "Post has been updated" };
     } else if (!postData.title && postData.content) {
       const post = await this.usePostsRepository.findOne({ where: { id: id } });
       if (!post) {
-        throw new RpcException({ status: 404, message: "Post doesn't exist" });
+        throw new RpcException({
+          code: status.NOT_FOUND,
+          message: "Post doesn't exist",
+        });
       }
       await this.usePostsRepository.update(
         { id },
@@ -151,7 +157,10 @@ export class PostService {
     } else if (postData.title && postData.content) {
       const post = await this.usePostsRepository.findOne({ where: { id: id } });
       if (!post) {
-        throw new RpcException({ status: 404, message: "Post doesn't exist" });
+        throw new RpcException({
+          code: status.NOT_FOUND,
+          message: "Post doesn't exist",
+        });
       }
       await this.usePostsRepository.update(
         { id },
@@ -164,7 +173,10 @@ export class PostService {
   async deletePost(id: number) {
     const post = await this.usePostsRepository.findOne({ where: { id: id } });
     if (!post) {
-      throw new RpcException({ status: 404, message: "Post doesn't exist" });
+      throw new RpcException({
+        code: status.NOT_FOUND,
+        message: "Post doesn't exist",
+      });
     }
     await this.usePostsRepository.delete({ id });
     return { message: "Post deleted successfully", post };

@@ -7,6 +7,7 @@ import {
 import { Reflector } from "@nestjs/core";
 import { ROLES_KEY } from "../decorators/roles.decorator";
 import { RpcException } from "@nestjs/microservices";
+import { status } from "@grpc/grpc-js";
 
 export enum UserRole {
   USER = "user",
@@ -14,6 +15,7 @@ export enum UserRole {
 }
 
 interface JwtPayload {
+  name: string;
   sub: number;
   email: string;
   role: string;
@@ -46,7 +48,7 @@ export class RolesGuard implements CanActivate {
     const { user } = context.switchToHttp().getRequest<AuthenticatedRequest>();
     if (!user) {
       throw new RpcException({
-        status: 403,
+        code: status.PERMISSION_DENIED,
         message: "User not authenticated",
       });
     }
@@ -54,7 +56,7 @@ export class RolesGuard implements CanActivate {
     console.log(requiredRoles);
     if (!hasRequiredRole) {
       throw new RpcException({
-        status: 403,
+        code: status.PERMISSION_DENIED,
         message: "Insufficient permission",
       });
     }

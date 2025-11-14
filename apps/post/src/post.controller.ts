@@ -3,52 +3,45 @@ import { PostService } from "./post.service";
 import { PostDto } from "./dto/post-dto";
 import { FindPostsQueryDto } from "./dto/find-posts-query.dto";
 import { Posts } from "./post.interfaces";
-import { MessagePattern, Payload } from "@nestjs/microservices";
+import { GrpcMethod, Payload } from "@nestjs/microservices";
 import { PaginatedResponse } from "./entity/paginated-response.interface";
-
-/* interface UserPayload {
-  sub: number;
-  email: string;
-  role: string;
-} */
 
 @Controller()
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
-  @MessagePattern("post.findAll")
+  @GrpcMethod("PostService", "GetAllPost")
   getAllPost(
     @Payload() query: FindPostsQueryDto
   ): Promise<PaginatedResponse<Posts>> {
     return this.postService.findAll(query);
   }
 
-  @MessagePattern("post.findOne")
-  getOnePost(@Payload() id: number) {
-    return this.postService.findOnePost(id);
+  @GrpcMethod("PostService", "GetOnePost")
+  getOnePost(@Payload() id: { id: number }) {
+    return this.postService.findOnePost(id.id);
   }
 
-  @MessagePattern("post.create")
+  @GrpcMethod("PostService", "CreatePost")
   createOnePost(@Payload() data: any) {
     const postData: PostDto = data.postData;
     const user = data.user;
     return this.postService.createPost(postData, user);
   }
 
-  @MessagePattern("post.update")
+  @GrpcMethod("PostService", "UpdatePost")
   async updatePost(
     @Payload()
     data: {
-      id: number;
+      id: string;
       postData: { title: string; content: string };
     }
   ) {
-    console.log(data);
-    return await this.postService.updatePost(data.id, data.postData);
+    return await this.postService.updatePost(Number(data.id), data.postData);
   }
 
-  @MessagePattern("post.delete")
-  async deletePost(@Payload() id: number) {
-    return await this.postService.deletePost(id);
+  @GrpcMethod("PostService", "DeletePost")
+  async deletePost(@Payload() id: { id: number }) {
+    return await this.postService.deletePost(id.id);
   }
 }

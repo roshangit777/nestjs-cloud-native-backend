@@ -1,8 +1,9 @@
 import { Controller } from "@nestjs/common";
 import { FileUploadService } from "./file-upload.service";
-import { MessagePattern, Payload } from "@nestjs/microservices";
+import { GrpcMethod, Payload } from "@nestjs/microservices";
 
 interface AuthorData {
+  name: string;
   sub: number;
   email: string;
   role: string;
@@ -11,7 +12,7 @@ interface AuthorData {
 }
 interface FileData {
   file: Express.Multer.File;
-  uploadfileDto: string | undefined;
+  description: string | undefined;
   user: AuthorData;
 }
 
@@ -19,22 +20,23 @@ interface FileData {
 export class FileUploadController {
   constructor(private readonly fileUploadService: FileUploadService) {}
 
-  @MessagePattern("file.upload")
+  @GrpcMethod("fileUploadService", "UploadFile")
   async uploadFile(@Payload() data: FileData): Promise<any> {
-    return this.fileUploadService.uploadFile(
-      data.file,
-      data.uploadfileDto,
-      data.user
-    );
+    return this.fileUploadService.uploadFile({
+      file: data.file,
+      description: data.description,
+      user: data.user,
+    });
   }
 
-  @MessagePattern("file.findAll")
-  async getFile(): Promise<any[]> {
-    return await this.fileUploadService.findAll();
+  @GrpcMethod("fileUploadService", "GetAllFile")
+  async getFile() {
+    const result = await this.fileUploadService.findAll();
+    return { files: result };
   }
 
-  @MessagePattern("file.delete")
-  async deleteFile(@Payload() id: string): Promise<{ message: string }> {
-    return await this.fileUploadService.remove(id);
+  @GrpcMethod("fileUploadService", "DeleteFile")
+  async deleteFile(@Payload() data: any): Promise<{ message: string }> {
+    return await this.fileUploadService.remove({ id: data.id });
   }
 }

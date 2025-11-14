@@ -1,17 +1,15 @@
 import {
-  Body,
   Controller,
   Get,
   Inject,
-  Post,
-  Query,
+  OnModuleInit,
+  Param,
   UseGuards,
 } from "@nestjs/common";
-import { ClientProxy } from "@nestjs/microservices";
+import type { ClientGrpc } from "@nestjs/microservices";
 import { Roles } from "apps/common/decorators/roles.decorator";
 import { AuthGuard } from "apps/common/guards/auth.guard";
 import { RolesGuard } from "apps/common/guards/roles.guard";
-import type { UserDetails } from "./interfaces/userDetail.interface";
 
 export enum UserRole {
   USER = "user",
@@ -19,22 +17,35 @@ export enum UserRole {
 }
 
 @Controller("login-history")
-export class LoginHistoryController {
+export class LoginHistoryController implements OnModuleInit {
+  private loginHistoryService: any;
   constructor(
-    @Inject("LOGIN_HISTORY_CLIENT") private loginHistroyClient: ClientProxy
+    @Inject("LOGIN_HISTORY_CLIENT") private loginHistroyClient: ClientGrpc
   ) {}
 
-  @Post("create")
+  onModuleInit() {
+    this.loginHistoryService =
+      this.loginHistroyClient.getService("loginHistory");
+  }
+
+  /*  @Post("create")
   createLoginHistory(@Body() data: UserDetails) {
     this.loginHistroyClient.send("history.create", data);
-  }
+  } */
 
   @Get("user-history")
   @Roles(UserRole.ADMIN)
   @UseGuards(AuthGuard, RolesGuard)
-  getAllUserLoginHistory(@Query("id") id?: number) {
-    const userId = id ? Number(id) : null;
-    const load = userId ? userId : {};
-    return this.loginHistroyClient.send("history.find", load);
+  getAllUserLoginHistory() {
+    return this.loginHistoryService.GetAllLoginHistory({});
+  }
+
+  @Get("user-history/:id")
+  @Roles(UserRole.ADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
+  getOneUserLoginHistory(@Param("id") id: number) {
+    return this.loginHistoryService.GetOneLoginHistory({
+      id: Number(id),
+    });
   }
 }
