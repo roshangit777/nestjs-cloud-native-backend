@@ -2,7 +2,8 @@ import { Module } from "@nestjs/common";
 import { ClientsModule, Transport } from "@nestjs/microservices";
 import { join } from "path";
 import { NotificationController } from "./notification.controller";
-import { WebsocketGateWay } from "./websocket.gateway";
+import { WebsocketGateway } from "./websocket.gateway";
+
 
 @Module({
   imports: [
@@ -13,15 +14,13 @@ import { WebsocketGateWay } from "./websocket.gateway";
         options: {
           package: "notification",
           protoPath: join(process.cwd(), "proto/notification.proto"),
-          url:
-            `${process.env.NOTIFICATION_HOST}:${process.env.NOTIFICATION_PORT}` ||
-            "0.0.0.0:50055",
+          url:"0.0.0.0:50055",
         },
       },
     ]),
   ],
   controllers: [NotificationController],
-  providers: [WebsocketGateWay],
-  exports: [WebsocketGateWay],
+  providers: [WebsocketGateway],
+  exports: [WebsocketGateway],
 })
 export class NotificationModule {}

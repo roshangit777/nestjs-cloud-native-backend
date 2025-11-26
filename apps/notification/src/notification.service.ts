@@ -5,11 +5,11 @@ import { Repository } from "typeorm";
 import { ClientProxy, RpcException } from "@nestjs/microservices";
 import { status } from "@grpc/grpc-js";
 
-export enum NotificationTitle {
-  LOGIN = "Login",
-}
-export enum NotificationMessage {
-  LOGIN = "Welcome to Application",
+export interface NotificationStructure {
+  userId: number;
+  type: MessageType;
+  title: string;
+  message: string;
 }
 
 @Injectable()
@@ -20,21 +20,15 @@ export class NotificationService {
     @Inject("NOTIFICATION_RMQ") private notificationClient: ClientProxy
   ) {}
 
-  async saveUserNotifications(id: number) {
-    console.log("This is from notification/service");
-    const result = this.notificationRepository.create({
-      user: id,
-      title: NotificationTitle.LOGIN,
-      message: NotificationMessage.LOGIN,
-      type: MessageType.INFO,
+  async saveUserNotifications(data: NotificationStructure) {
+    const result: Notification = this.notificationRepository.create({
+      user: Number(data.userId),
+      title: data.title,
+      message: data.message,
+      type: data.type,
     });
-    console.log(result);
     await this.notificationRepository.save(result);
-    this.notificationClient.emit("broadcast_notification", {
-      title: NotificationTitle.LOGIN,
-      message: NotificationMessage.LOGIN,
-      type: MessageType.INFO,
-    });
+    this.notificationClient.emit("broadcast_notification", { result });
   }
 
   async userNotification(id: number) {

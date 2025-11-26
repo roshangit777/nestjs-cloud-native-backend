@@ -14,9 +14,11 @@ import { ConfigModule } from "@nestjs/config";
         options: {
           package: "auth",
           protoPath: join(process.cwd(), "proto/auth.proto"),
-          url:
+          /* url:
             `${process.env.AUTH_HOST}:${process.env.AUTH_PORT}` ||
-            "0.0.0.0:50052",
+            "0.0.0.0:50052", */
+          url:"0.0.0.0:50052",
+
         },
       },
     ]),

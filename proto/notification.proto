@@ -3,16 +3,9 @@ syntax = "proto3";
 package notification;
 
 service Notification {
-  rpc AddNotification (AddNotificationRequest) returns (AddNotificationResponse);
   rpc GetNotification (GetNotificationRequest) returns (GetNotificationResponse);
   rpc UpdateNotification (UpdateNotificationRequest) returns (UpdateNotificationResponse);
 }
-
-message AddNotificationRequest {
-  int32 id = 1;
-}
-
-message AddNotificationResponse {}
 
 message GetNotificationRequest {
   int32 id = 1;

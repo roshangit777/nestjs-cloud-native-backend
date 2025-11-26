@@ -12,9 +12,7 @@ import { join } from "path";
         options: {
           package: "fileUpload",
           protoPath: join(process.cwd(), "proto/fileUpload.proto"),
-          url:
-            `${process.env.FILE_UPLOAD_HOST}:${process.env.FILE_UPLOAD_PORT}` ||
-            "0.0.0.0:50053",
+          url:"0.0.0.0:50053",
         },
       },
     ]),

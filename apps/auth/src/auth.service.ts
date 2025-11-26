@@ -110,8 +110,6 @@ export class AuthService {
       role: user.role,
     };
     this.loginHistroryClient.emit("record_login", loginData);
-    this.notificationClient.emit("record_notification", user.id);
-
     /* this.loginHistroryClient.emit("history.create", user.id).subscribe({
       next: (res) => console.log("Login recorded:", res),
       error: (err) => console.error("Error recording login:", err),

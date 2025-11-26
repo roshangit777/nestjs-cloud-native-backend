@@ -5,7 +5,7 @@ import { Repository } from "typeorm";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { FindPostsQueryDto } from "./dto/find-posts-query.dto";
 import type { Cache } from "cache-manager";
-import { RpcException } from "@nestjs/microservices";
+import { ClientProxy, RpcException } from "@nestjs/microservices";
 import { Posts } from "./entity/post.entity";
 import { PaginatedResponse } from "./entity/paginated-response.interface";
 import { status } from "@grpc/grpc-js";
@@ -23,7 +23,8 @@ export class PostService {
   private postListCacheKeys: Set<string> = new Set();
   constructor(
     @InjectRepository(Posts) private usePostsRepository: Repository<Posts>,
-    @Inject(CACHE_MANAGER) private cachManager: Cache
+    @Inject(CACHE_MANAGER) private cachManager: Cache,
+    @Inject("NOTIFICATION_RECORD_RMQ") private notificationClient: ClientProxy
   ) {}
 
   private generatePostsListCacheKey(query: FindPostsQueryDto): string {
@@ -127,7 +128,15 @@ export class PostService {
 
     //clearing the set(cachekeystorage)
     this.postListCacheKeys.clear();
-    return await this.usePostsRepository.save(post);
+    const result = await this.usePostsRepository.save(post);
+
+    this.notificationClient.emit("record_notification", {
+      userId: Number(name.sub),
+      type: "success",
+      title: "Successfull Post",
+      message: `The post with title "${post.title}" has been posted.`,
+    });
+    return result;
   }
 
   async updatePost(id: number, postData: Omit<Post, "id" | "createdAt">) {

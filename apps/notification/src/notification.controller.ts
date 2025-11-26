@@ -1,23 +1,23 @@
 import { Controller } from "@nestjs/common";
 import { NotificationService } from "./notification.service";
 import { GrpcMethod, MessagePattern, Payload } from "@nestjs/microservices";
+import { MessageType } from "./entity/notification.entity";
+
+export interface NotificationStructure {
+  userId: number;
+  type: MessageType;
+  title: string;
+  message: string;
+}
 
 @Controller()
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
-  /* @MessagePattern("record_notification") */
-
   @MessagePattern("record_notification")
-  async saveNotification(userId: number) {
+  async saveNotification(@Payload() data: NotificationStructure) {
     console.log("This is from notification/Controller");
-    await this.notificationService.saveUserNotifications(userId);
-  }
-
-  @GrpcMethod("Notification", "AddNotification")
-  async saveNotifications(userId: { id: number }) {
-    console.log("This is from notification/Controller");
-    await this.notificationService.saveUserNotifications(userId.id);
+    await this.notificationService.saveUserNotifications(data);
   }
 
   @GrpcMethod("Notification", "GetNotification")

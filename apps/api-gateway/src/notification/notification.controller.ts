@@ -8,11 +8,12 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import {
-  EventPattern,
   MessagePattern,
+  Payload,
   type ClientGrpc,
 } from "@nestjs/microservices";
-import { WebsocketGateWay } from "./websocket.gateway";
+import { WebsocketGateway } from "./websocket.gateway";
+import type { NotificationStructure } from "./interface/notificationStructure.interface";
 /* import { AuthGuard } from "apps/common/guards/auth.guard"; */
 
 export enum UserRole {
@@ -25,12 +26,22 @@ export class NotificationController implements OnModuleInit {
   private notificationService: any;
   constructor(
     @Inject("NOTIFICATION_CLIENT") private notificationClient: ClientGrpc,
-    private websocketGateway: WebsocketGateWay
+    private websocketGateway: WebsocketGateway
   ) {}
 
   onModuleInit() {
     this.notificationService =
       this.notificationClient.getService("Notification");
+  }
+
+  @MessagePattern("broadcast_notification")
+  handleNotification(@Payload() data: NotificationStructure) {
+    this.websocketGateway.sendToUser(data.user, {
+      type: data.type,
+      title: data.title,
+      message: data.message,
+      time: data.createdAt,
+    });
   }
 
   @Get("create")
@@ -39,18 +50,6 @@ export class NotificationController implements OnModuleInit {
     return this.notificationService.AddNotification({
       id: 2,
     });
-  }
-
-  /*  @MessagePattern("new_notification")
-  handleNotification(payload: any) {
-    console.log("message form websocket emit:", payload);
-    this.websocketGateway.server.emit("newNotification", payload);
-  } */
-
-  @MessagePattern("broadcast_notification")
-  handleBroadcast(data: any) {
-    console.log("from the notification websocket");
-    this.websocketGateway.server.emit("notification", data);
   }
 
   @Get("get/:id")
