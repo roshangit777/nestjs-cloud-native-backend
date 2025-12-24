@@ -1,12 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import { OrderDto } from "./Dto/orderDto";
 import { RpcException } from "@nestjs/microservices";
 import { status } from "@grpc/grpc-js";
-import { CreatePaymentDto } from "./Dto/paymentDto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Orders, Payment } from "./entity/payment.entity";
 import { Repository } from "typeorm";
-import { PaymentCheck } from "./interfaces/payment.interface";
+import { CreateOrder, PaymentCheck } from "./interfaces/payment.interface";
 
 @Injectable()
 export class PaymentService {
@@ -23,7 +21,7 @@ export class PaymentService {
     this.testApiSecret = process.env.Test_Key_Secret ?? "";
   }
 
-  async createOrder(data) {
+  async createOrder(data: CreateOrder) {
     const orderData = {
       amount: data.amount,
       currency: data.currency,
@@ -54,10 +52,8 @@ export class PaymentService {
 
     const result = await response.json();
 
-    console.log("create-Order:", result);
-
     const newOrder = this.ordersRepository.create({
-      userId: data.userId,
+      userId: Number(data.userId),
       name: data.customerName,
       email: data.customerEmail,
       fileId: data.productId,
@@ -70,6 +66,7 @@ export class PaymentService {
     });
 
     const res = await this.ordersRepository.save(newOrder);
+
     return {
       id: res.id,
       name: res.name,
@@ -98,8 +95,6 @@ export class PaymentService {
       },
     };
 
-    console.log("paymentDetails:", paymentDetails);
-
     const response = await fetch("https://api.razorpay.com/v1/payment_links", {
       method: "POST",
       headers: {
@@ -117,7 +112,6 @@ export class PaymentService {
     }
 
     const result = await response.json();
-    console.log("payment result:", result);
 
     const newPayment = this.paymentRepository.create({
       orderId: data.id,
@@ -175,7 +169,7 @@ export class PaymentService {
     if (!linkResponse.ok) {
       throw new RpcException({
         code: status.INTERNAL,
-        message: "Failed to fetch payment link details",
+        message: "Failed to fetch payment link details 1",
       });
     }
 
@@ -196,13 +190,13 @@ export class PaymentService {
     if (!response.ok) {
       throw new RpcException({
         code: status.INTERNAL,
-        message: "Failed to fetch payment details",
+        message: "Failed to fetch payment details 2",
       });
     }
 
     const result = await response.json();
 
-    await this.paymentRepository.update(
+    const payment_details = await this.paymentRepository.update(
       { razorpayPaymentId: id },
       {
         razorpay_Confirmation_PaymentId: result.id,
@@ -216,7 +210,11 @@ export class PaymentService {
       }
     );
 
-    this.updateOrder(id);
+    if (result.status === "captured" && result.captured === true) {
+      this.updateOrder(id);
+    }
+
+    this.sendEmail(id);
 
     return {
       id: result.id,
@@ -263,5 +261,45 @@ export class PaymentService {
     if (!payment) return;
 
     await this.ordersRepository.update({ id: payment.orderId }, { paid: true });
+  }
+
+  async sendEmail(id: string) {
+    try {
+      const payment = await this.paymentRepository.findOne({
+        where: { razorpayPaymentId: id },
+      });
+
+      if (!payment) return;
+
+      const order = await this.ordersRepository.findOne({
+        where: { id: payment.orderId },
+      });
+
+      if (!order?.email) return;
+
+      const bodyData = {
+        toEmail: order.email,
+        userName: order.name,
+        orderId: order.orderId,
+        amount: order.price,
+        transactionDetails: payment.transactionDetails,
+        dataAndTime: payment.updatedAt,
+      };
+
+      fetch(
+        "https://wd2fdsn2mf.execute-api.us-east-1.amazonaws.com/send-email",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(bodyData),
+        }
+      ).catch(() => {
+        // silently ignore errors
+      });
+    } catch (err) {
+      // never break main flow
+    }
   }
 }

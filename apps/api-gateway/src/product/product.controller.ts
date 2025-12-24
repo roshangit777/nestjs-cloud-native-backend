@@ -28,16 +28,15 @@ export class ProductController implements OnModuleInit {
     this.productServices = this.productClient.getService("productService");
   }
 
+  @UseGuards(AuthGuard)
   @Get("images")
   getProduct() {
-    console.log("1 from api-gateway product");
     return this.productServices.GetAllProduct({});
   }
 
   @UseGuards(AuthGuard)
   @Post("images/buy")
   purchaseProduct(@Body() data: OrderDto, @CurrentUser() user: UserPayload) {
-    console.log("data:", data);
     return this.productServices.CreateOrder({
       amount: data.amount,
       currency: data.currency,

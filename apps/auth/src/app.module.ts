@@ -8,15 +8,23 @@ import { Users } from "./entities/user.entity";
   imports: [
     TypeOrmModule.forRoot({
       type: "postgres",
-      host: "localhost", //host.docker.internal
+      host: "database-1.cdmm6046orkw.eu-north-1.rds.amazonaws.com",
       port: 5432,
-      username: "postgres", // your pgAdmin username
-      password: "root", // your pgAdmin password
-      database: "nestjs_auth", // the database you created
+      username: "postgres",
+      password: "rootroot",
+      database: "authdb",
+      ssl: {
+        rejectUnauthorized: false,
+      },
+      extra: {
+        ssl: {
+          rejectUnauthorized: false,
+        },
+      },
       autoLoadEntities: true,
-      synchronize: true, // only for development
-      entities: [Users],
+      synchronize: true,
     }),
+
     /*  ConfigModule.forRoot({
       isGlobal: true,
       load: [appConfig],

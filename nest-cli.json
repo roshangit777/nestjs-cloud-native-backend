@@ -43,6 +43,15 @@
         "tsConfigPath": "apps/login-history/tsconfig.app.json"
       }
     },
+    "module": {
+      "type": "application",
+      "root": "apps/video-upload/module",
+      "entryFile": "main",
+      "sourceRoot": "apps/video-upload/module/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/video-upload/module/tsconfig.app.json"
+      }
+    },
     "notification": {
       "type": "application",
       "root": "apps/notification",
@@ -86,6 +95,24 @@
       "sourceRoot": "apps/purchase/src",
       "compilerOptions": {
         "tsConfigPath": "apps/purchase/tsconfig.app.json"
+      }
+    },
+    "video-process": {
+      "type": "application",
+      "root": "apps/video-process",
+      "entryFile": "main",
+      "sourceRoot": "apps/video-process/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/video-process/tsconfig.app.json"
+      }
+    },
+    "video-upload": {
+      "type": "application",
+      "root": "apps/video-upload",
+      "entryFile": "main",
+      "sourceRoot": "apps/video-upload/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/video-upload/tsconfig.app.json"
       }
     }
   }

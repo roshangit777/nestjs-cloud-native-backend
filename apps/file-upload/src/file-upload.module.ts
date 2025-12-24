@@ -8,12 +8,14 @@ import { memoryStorage } from "multer";
 import { AppModule } from "./app.module";
 import { File } from "./entity/cloudinary.entity";
 import { ClientsModule, Transport } from "@nestjs/microservices";
+import { S3Module } from "./AWS/aws-s3.module";
 
 @Module({
   imports: [
     AppModule,
     TypeOrmModule.forFeature([File]),
     CloudinaryModule,
+    S3Module,
     MulterModule.register({ storage: memoryStorage() }),
     ClientsModule.register([
       {

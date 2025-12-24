@@ -1,0 +1,122 @@
+syntax = "proto3";
+
+package videoUpload;
+
+service VideoUploadService {
+  rpc AwsUrl (UploadFileRequest) returns (UploadFileResponse);
+  rpc UploadConfirmation(UploadConfirmationRequest) returns (UploadConfirmationResponse);
+  rpc VideoStatus(VideoStatusRequest) returns (VideoStatusResponse);
+  rpc GetAllVideos (GetAllVideosRequest) returns (GetAllVideosResponse);
+  rpc DeleteVideo (DeleteRequest) returns (DeleteResponse);
+  rpc GetPurchasedFiles (GetPurchasedFilesRequest) returns (GetPurchasedFilesResponse);
+}
+
+message FileData {
+  string fieldname = 1;
+  string originalname = 2;
+  string encoding = 3;
+  string mimetype = 4;
+  bytes buffer = 5;  // the actual file content
+  int32 size = 6;
+}
+
+message Author {
+  string name = 1;
+  string id = 2;
+  string email = 3;
+  string role = 4;
+}
+
+message UploadFileRequest {
+  string size = 1;
+  string contentType = 2;
+}
+
+message UploaderDetails {
+  int32 id = 1;                
+  string name = 2;
+  string email = 3;
+  string role = 4;          
+}
+
+message UploadFileResponse {
+  string videoId = 1;
+  string uploadUrl = 2;
+}
+
+message UploadConfirmationRequest {
+  string videoId = 1;
+  string title = 2;
+  string description = 3;
+  uint32 sizeBytes = 4;
+  Author user = 5; 
+}
+
+message UploadConfirmationResponse {
+  string videoId = 1;
+  string status = 2;
+  string streamUrl = 3;
+}
+
+message VideoStatusRequest {
+  string id = 1;
+}
+
+message VideoStatusResponse {
+  string status = 1;
+  string streamKey = 2;
+  string streamUrl = 3;
+  
+}
+
+message GetAllVideosRequest {}
+
+message VideoDetails {
+  string id = 1;
+  string originalKey = 2;
+  string streamKey = 3;
+  string streamUrl = 4;
+  string status = 5;
+  string errorReason = 6;
+  int32 uploader = 7;
+  UploaderDetails userDetails = 8;
+  string title = 9;
+  string description = 10;
+  string mimeType = 11;
+  int32 sizeBytes = 12;
+  string createdAt = 13;
+  string updatedAt = 14;
+
+}
+
+message GetAllVideosResponse {
+  repeated VideoDetails result = 1;
+}
+
+message DeleteRequest {
+  string id = 1;
+  int32 userId= 2;
+}
+
+message DeleteResponse {
+  string message = 1;
+}
+
+message GetPurchasedFilesRequest {
+  repeated string ids = 1;
+}
+
+message PurchasedFile {
+  string id = 1;
+  string originalName = 2;
+  string mimeType = 3;
+  string size = 4;
+  string url = 5;
+  int32 price = 7;
+  UploaderDetails userDetails = 10;
+  string createdAt = 11;
+}
+
+message GetPurchasedFilesResponse {
+  repeated PurchasedFile files = 1;
+}

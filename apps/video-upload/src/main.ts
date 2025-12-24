@@ -1,23 +1,23 @@
 import { NestFactory } from "@nestjs/core";
-import { FileUploadModule } from "./file-upload.module";
+import { VideoUploadModule } from "./video-upload.module";
 import { MicroserviceOptions, Transport } from "@nestjs/microservices";
 import { join } from "path";
 
 async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-    FileUploadModule,
+    VideoUploadModule,
     {
       transport: Transport.GRPC,
       options: {
         maxReceiveMessageLength: 50 * 1024 * 1024, // 50MB
         maxSendMessageLength: 50 * 1024 * 1024,
-        package: "fileUpload",
-        protoPath: join(process.cwd(), "proto/fileUpload.proto"),
-        url: "0.0.0.0:50053",
+        package: "videoUpload",
+        protoPath: join(process.cwd(), "proto/videoUpload.proto"),
+        url: "0.0.0.0:50059",
       },
     }
   );
   await app.listen();
-  console.log("Post gRPC microservice running on port 50053");
+  console.log("Post gRPC microservice running on port 50059");
 }
 bootstrap();

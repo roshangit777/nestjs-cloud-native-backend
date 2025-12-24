@@ -34,7 +34,6 @@ export class PurchaseController implements OnModuleInit {
         ids: imgIds,
       })
     );
-    console.log("response from file-upload:", result);
     return { files: result.files };
   }
 }

@@ -15,6 +15,8 @@
     "build:product": "nest build product",
     "build:payment": "nest build payment",
     "build:purchase": "nest build purchase",
+    "build:video-upload": "nest build video-upload",
+    "build:video-process": "nest build video-process",
     "start:notification": "npm run build:notification && node dist/apps/notification/main.js",
     "start:api-gateway": "npm run build:notification && node dist/apps/api-gateway/main.js",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
@@ -27,9 +29,11 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./apps/login-history/auth-micro/test/jest-e2e.json"
+    "test:e2e": "jest --config ./apps/login-history/auth-micro/apps/video-upload/auth-micro/test/jest-e2e.json"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.956.0",
+    "@aws-sdk/s3-request-presigner": "^3.956.0",
     "@grpc/grpc-js": "^1.14.1",
     "@grpc/proto-loader": "^0.8.0",
     "@nestjs/cache-manager": "^3.0.1",
@@ -65,7 +69,8 @@
     "rxjs": "^7.8.1",
     "sharp": "^0.34.4",
     "streamifier": "^0.1.1",
-    "typeorm": "^0.3.27"
+    "typeorm": "^0.3.27",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

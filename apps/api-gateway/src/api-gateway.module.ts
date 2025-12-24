@@ -10,6 +10,7 @@ import { NotificationModule } from "./notification/notification.module";
 import { ProductModule } from './product/product.module';
 import { PaymentModule } from './payment/payment.module';
 import { PurchaseModule } from './purchase/purchase.module';
+import { VideoUploadModule } from './video-upload/video-upload.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { PurchaseModule } from './purchase/purchase.module';
     ProductModule,
     PaymentModule,
     PurchaseModule,
+    VideoUploadModule,
   ],
   controllers: [ApiGatewayController],
   providers: [ApiGatewayService],

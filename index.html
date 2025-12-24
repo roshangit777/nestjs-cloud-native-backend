@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Video Player</title>
+
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #0f172a;
+        font-family: Arial, sans-serif;
+      }
+
+      .player {
+        width: fit-content;
+        max-width: 90vw;
+        background: #000;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      }
+
+      video {
+        display: block;
+        max-width: 90vw;
+        max-height: 60vh;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        background: black;
+      }
+
+      .controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        background: #020617;
+        color: white;
+      }
+
+      button {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      input[type="range"] {
+        cursor: pointer;
+      }
+
+      .progress {
+        flex: 1;
+      }
+
+      .time {
+        font-size: 12px;
+        min-width: 80px;
+        text-align: center;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="player">
+      <video id="video">
+        <source
+          src="https://auth-file-upload-service.s3.us-east-1.amazonaws.com/1766143494721-Attack on Titan OST - 2An _ Hiroyuki Sawano.mp4"
+          type="video/mp4"
+        />
+      </video>
+
+      <div class="controls">
+        <button id="play">▶️</button>
+
+        <div class="progress">
+          <input type="range" id="seek" value="0" />
+        </div>
+
+        <span class="time" id="time">0:00 / 0:00</span>
+
+        <input type="range" id="volume" min="0" max="1" step="0.01" value="1" />
+
+        <button id="fullscreen">⛶</button>
+      </div>
+    </div>
+
+    <script>
+      const video = document.getElementById("video");
+      const playBtn = document.getElementById("play");
+      const seek = document.getElementById("seek");
+      const time = document.getElementById("time");
+      const volume = document.getElementById("volume");
+      const fullscreen = document.getElementById("fullscreen");
+
+      playBtn.onclick = () => {
+        if (video.paused) {
+          video.play();
+          playBtn.textContent = "⏸️";
+        } else {
+          video.pause();
+          playBtn.textContent = "▶️";
+        }
+      };
+
+      video.ontimeupdate = () => {
+        seek.value = (video.currentTime / video.duration) * 100 || 0;
+        time.textContent =
+          format(video.currentTime) + " / " + format(video.duration);
+      };
+
+      seek.oninput = () => {
+        video.currentTime = (seek.value / 100) * video.duration;
+      };
+
+      volume.oninput = () => {
+        video.volume = volume.value;
+      };
+
+      fullscreen.onclick = () => {
+        video.requestFullscreen();
+      };
+
+      function format(sec) {
+        if (!sec) return "0:00";
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60)
+          .toString()
+          .padStart(2, "0");
+        return `${m}:${s}`;
+      }
+    </script>
+  </body>
+</html>

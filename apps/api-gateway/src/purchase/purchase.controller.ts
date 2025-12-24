@@ -7,7 +7,9 @@ import {
 } from "@nestjs/common";
 import type { ClientGrpc } from "@nestjs/microservices";
 import { CurrentUser } from "apps/common/decorators/current-user.decorator";
+import { Roles } from "apps/common/decorators/roles.decorator";
 import { AuthGuard } from "apps/common/guards/auth.guard";
+import { RolesGuard, UserRole } from "apps/common/guards/roles.guard";
 
 interface UserPayload {
   sub: number;
@@ -25,13 +27,15 @@ export class PurchaseController implements OnModuleInit {
     this.purchaseServices = this.purchaseClient.getService("PurchaseService");
   }
 
-  @UseGuards(AuthGuard)
+  @Roles(UserRole.ADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
   @Get("orders")
   getAllOrders() {
     return this.purchaseServices.GetAllOrders({});
   }
 
-  @UseGuards(AuthGuard)
+  @Roles(UserRole.ADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
   @Get("orders/paid")
   getAllSuccessfullOrders() {
     return this.purchaseServices.GetAllSuccessfullOrders({});

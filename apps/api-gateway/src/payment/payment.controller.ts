@@ -60,6 +60,7 @@ export class PaymentController implements OnModuleInit {
     });
   }
 
+  @UseGuards(AuthGuard)
   @Get("payment-confirmation")
   handlePaymentCheck(@Query("id") data: string) {
     console.log(data);

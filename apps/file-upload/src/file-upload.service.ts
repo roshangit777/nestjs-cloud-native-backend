@@ -8,6 +8,7 @@ import path, { join } from "path";
 import { ClientProxy, RpcException } from "@nestjs/microservices";
 import { File } from "./entity/cloudinary.entity";
 import { status } from "@grpc/grpc-js";
+import { S3Service } from "./AWS/aws-s3.service";
 
 interface AuthorData {
   name: string;
@@ -27,7 +28,8 @@ interface WorkerResponse {
 export class FileUploadService {
   constructor(
     @InjectRepository(File) private readonly fileRepository: Repository<File>,
-    private readonly cloudinaryService: CloudinaryService,
+    /* private readonly cloudinaryService: CloudinaryService, */
+    private readonly s3BucketService: S3Service,
     @Inject("NOTIFICATION_RECORD_RMQ") private notificationClient: ClientProxy
   ) {}
 
@@ -93,16 +95,26 @@ export class FileUploadService {
             try {
               compressedImagePath = data.path;
 
-              const cloudRes = await this.cloudinaryService.uploadFile(
+              //cloudinary
+
+              /* const cloudRes = await this.cloudinaryService.uploadFile(
                 data.path
+              ); */
+
+              //aws s3 bucket
+
+              const cloudRes = await this.s3BucketService.uploadFile(
+                data.path,
+                file.originalname,
+                file.mimeType
               );
 
               const fileEntity = this.fileRepository.create({
                 originalName: file.originalname,
                 mimeType: file.mimetype,
                 size: file.size,
-                publicId: cloudRes.public_id,
-                url: cloudRes.secure_url,
+                publicId: cloudRes.key,
+                url: cloudRes.url,
                 description,
                 uploader: Number(user.sub),
                 userDetails: {
@@ -183,7 +195,12 @@ export class FileUploadService {
       });
     }
     //first delete from cloudinary
-    await this.cloudinaryService.deleteFile(fileToBeDeleted.publicId);
+    /* await this.cloudinaryService.deleteFile(fileToBeDeleted.publicId); */
+
+    //first delete from s3 bucket
+
+    await this.s3BucketService.deleteFile(fileToBeDeleted.publicId);
+
     //then delete from the db
     await this.fileRepository.remove(fileToBeDeleted);
 
