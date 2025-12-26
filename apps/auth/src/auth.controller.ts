@@ -14,23 +14,23 @@ export class AuthController {
     return await this.authServices.userRegister(data);
   }
 
-  @GrpcMethod("AuthService", "UserLogin")
-  async userLogin(@Payload() data: LoginUserDto) {
-    return await this.authServices.loginUser(data);
-  }
-
-  @GrpcMethod("AuthService", "Refresh")
-  async refreshToken(@Payload() data: { token: string }) {
-    return await this.authServices.refreshAndSetToken(data.token);
-  }
-
   @GrpcMethod("AuthService", "AdminRegister")
   async createAdmin(@Payload() data: RegisterUserDto) {
     return await this.authServices.adminRegister(data);
   }
 
+  @GrpcMethod("AuthService", "UserLogin")
+  async userLogin(@Payload() data: LoginUserDto) {
+    return await this.authServices.loginUser(data);
+  }
+
   @GrpcMethod("AuthService", "AdminLogin")
   async adminLogin(@Payload() data: LoginUserDto) {
     return await this.authServices.loginAdmin(data);
+  }
+
+  @GrpcMethod("AuthService", "Refresh")
+  async refreshToken(@Payload() data: { token: string }) {
+    return await this.authServices.refreshAndSetToken(data.token);
   }
 }

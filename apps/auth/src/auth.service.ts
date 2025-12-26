@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { Repository } from "typeorm";
-import { Users, UserRole } from "./entities/user.entity";
+import { Users /* UserRole */ } from "./entities/user.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { RegisterUserDto } from "./dto/register.dto";
 import * as bcrypt from "bcrypt";
@@ -9,14 +9,18 @@ import { JwtService } from "@nestjs/jwt";
 import type { ClientProxy } from "@nestjs/microservices";
 import { RpcException } from "@nestjs/microservices";
 import { status } from "@grpc/grpc-js";
+import { Roles } from "./entities/roles.entity";
+import { UserRoleMap } from "./entities/user-role-map.entity";
 /* import { LoginHistory } from 'src/events/entity/login-history.entity'; */
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(Users) private userRepository: Repository<Users>,
+    @InjectRepository(Roles) private rolesRepository: Repository<Roles>,
+    @InjectRepository(UserRoleMap)
+    private userRoleMapRepository: Repository<UserRoleMap>,
     private jwtService: JwtService,
-    /* private readonly userEventService: UserEventsService, */
     @Inject("LOGIN_HISTORY_RMQ") private loginHistroryClient: ClientProxy,
     @Inject("NOTIFICATION_RECORD_RMQ") private notificationClient: ClientProxy
   ) {}
@@ -32,14 +36,22 @@ export class AuthService {
       });
     }
     const user = this.userRepository.create({
-      ...userData,
-      role: UserRole.USER,
+      name: userData.name,
+      email: userData.email,
       password: await this.hashPassword(userData.password),
     });
     await this.userRepository.save(user);
 
-    //emit the user registere event
-    /*  this.userEventService.emitUserRegistered(user); */
+    const role = await this.rolesRepository.findOne({
+      where: { roleName: "user" },
+    });
+
+    const userRoleMapping = this.userRoleMapRepository.create({
+      user: { id: user.id },
+      role: { id: role?.id },
+    });
+
+    await this.userRoleMapRepository.save(userRoleMapping);
 
     const { password, ...result } = user;
     return {
@@ -59,12 +71,24 @@ export class AuthService {
       });
     }
     const admin = this.userRepository.create({
-      ...userData,
-      role: UserRole.ADMIN,
+      name: userData.name,
+      email: userData.email,
       password: await this.hashPassword(userData.password),
     });
 
     await this.userRepository.save(admin);
+
+    const role = await this.rolesRepository.findOne({
+      where: { roleName: "admin" },
+    });
+
+    const adminRoleMapping = this.userRoleMapRepository.create({
+      user: { id: admin.id },
+      role: { id: role?.id },
+    });
+
+    await this.userRoleMapRepository.save(adminRoleMapping);
+
     const { password, ...result } = admin;
     return {
       message: "Register is completed",
@@ -75,6 +99,7 @@ export class AuthService {
   async loginUser(userData: LoginUserDto) {
     const user = await this.userRepository.findOne({
       where: { email: userData.email },
+      relations: ["roles", "roles.role"],
     });
 
     if (
@@ -86,15 +111,18 @@ export class AuthService {
         message: "Email or password is invalid",
       });
     }
+
+    const roles = user?.roles.map((item) => item.role.roleName);
+
     const payload = {
       name: user.name,
       sub: user.id,
       email: user.email,
-      role: user.role,
+      role: roles,
     };
-    /*  await this.userEventService.recordLogin(user.id); */
+
     const accessToken = await this.jwtService.signAsync(payload, {
-      expiresIn: "30m",
+      expiresIn: "90m",
     });
     const refreshToken = await this.jwtService.signAsync(
       { id: payload.sub },
@@ -107,14 +135,23 @@ export class AuthService {
       id: user.id,
       name: user.name,
       email: user.email,
-      role: user.role,
+      role: roles,
     };
     this.loginHistroryClient.emit("record_login", loginData);
     /* this.loginHistroryClient.emit("history.create", user.id).subscribe({
       next: (res) => console.log("Login recorded:", res),
       error: (err) => console.error("Error recording login:", err),
     }); */
-    return { accessToken, refreshToken };
+    return {
+      accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        roles,
+      },
+    };
   }
 
   async refreshAndSetToken(token: string) {
@@ -124,6 +161,7 @@ export class AuthService {
     });
     const user = await this.userRepository.findOne({
       where: { id: result.id },
+      relations: ["roles", "roles.role"],
     });
 
     if (!user) {
@@ -132,14 +170,17 @@ export class AuthService {
         message: "User not found for Token Refresh",
       });
     }
+
+    const roles = user.roles.map((item) => item.role.roleName);
+
     const payload = {
       name: user.name,
       sub: user.id,
       email: user.email,
-      role: user?.role,
+      role: roles,
     };
     const accessToken = await this.jwtService.signAsync(payload, {
-      expiresIn: "30m",
+      expiresIn: "90m",
     });
     return { accessToken };
   }
@@ -147,6 +188,7 @@ export class AuthService {
   async loginAdmin(userData: LoginUserDto) {
     const user = await this.userRepository.findOne({
       where: { email: userData.email },
+      relations: ["roles", "roles.role"],
     });
 
     if (
@@ -158,7 +200,10 @@ export class AuthService {
         message: "Email or password is invalid",
       });
     }
-    if (user.role !== UserRole.ADMIN) {
+
+    const roles = user?.roles.map((item) => item.role.roleName);
+
+    if (!roles?.includes("admin")) {
       {
         throw new RpcException({
           code: status.UNAUTHENTICATED,
@@ -171,10 +216,10 @@ export class AuthService {
       name: user.name,
       sub: user.id,
       email: user.email,
-      role: user.role,
+      role: roles,
     };
     const accessToken = await this.jwtService.signAsync(payload, {
-      expiresIn: "30m",
+      expiresIn: "90m",
     });
     const refreshToken = await this.jwtService.signAsync(
       { id: user.id },
@@ -185,11 +230,20 @@ export class AuthService {
       id: user.id,
       name: user.name,
       email: user.email,
-      role: user.role,
+      role: roles,
     };
     this.loginHistroryClient.emit("record_login", loginData);
     this.notificationClient.emit("record_notification", user.id);
-    return { accessToken, refreshToken };
+    return {
+      accessToken,
+      refreshToken,
+      admin: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        roles,
+      },
+    };
   }
 
   private async hashPassword(password: string): Promise<string> {
@@ -200,7 +254,7 @@ export class AuthService {
     plainPassword: string,
     hashedPassword: string
   ): Promise<boolean> {
-    return await bcrypt.compare(plainPassword, hashedPassword); // compares plain vs hashed
+    return await bcrypt.compare(plainPassword, hashedPassword);
   }
 }
 

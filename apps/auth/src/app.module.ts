@@ -3,10 +3,12 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 /* import { EventEmitterModule } from "@nestjs/event-emitter";
 import { ThrottlerModule } from "@nestjs/throttler"; */
 import { Users } from "./entities/user.entity";
+import { Roles } from "./entities/roles.entity";
+import { UserRoleMap } from "./entities/user-role-map.entity";
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
+    /* TypeOrmModule.forRoot({
       type: "postgres",
       host: "database-1.cdmm6046orkw.eu-north-1.rds.amazonaws.com",
       port: 5432,
@@ -23,6 +25,18 @@ import { Users } from "./entities/user.entity";
       },
       autoLoadEntities: true,
       synchronize: true,
+    }), */
+
+    TypeOrmModule.forRoot({
+      type: "postgres",
+      host: "localhost",
+      port: 5432,
+      username: "postgres", // your pgAdmin username
+      password: "root", // your pgAdmin password
+      database: "nestjs_auth", // the database you created
+      autoLoadEntities: true,
+      synchronize: true, // only for development
+      entities: [Users, Roles, UserRoleMap],
     }),
 
     /*  ConfigModule.forRoot({

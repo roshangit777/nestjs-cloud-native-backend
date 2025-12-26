@@ -2,15 +2,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from "typeorm";
+import { UserRoleMap } from "./user-role-map.entity";
 
-export enum UserRole {
-  USER = "user",
-  ADMIN = "admin",
-}
-
-@Entity()
+@Entity("users")
 export class Users {
   @PrimaryGeneratedColumn()
   id: number;
@@ -24,16 +22,12 @@ export class Users {
   @Column()
   password: string;
 
-  @Column({
-    type: "enum",
-    enum: UserRole,
-    default: UserRole.USER,
-  })
-  role: UserRole;
+  @OneToMany(() => UserRoleMap, (ur) => ur.user)
+  roles: UserRoleMap[];
 
   @CreateDateColumn()
   createdAt: Date;
 
-  @CreateDateColumn()
+  @UpdateDateColumn()
   updatedAt: Date;
 }

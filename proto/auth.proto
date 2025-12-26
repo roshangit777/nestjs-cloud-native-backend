@@ -46,9 +46,17 @@ message UserLoginRequest {
   string password = 2;
 }
 
+message UserInfo {
+  int32 id = 1;
+  string name = 2;
+  string email = 3;
+  repeated string roles = 4;
+}
+
 message UserLoginResponse {
- string accessToken = 1;
- string refreshToken = 2;
+  string accessToken = 1;
+  string refreshToken = 2;
+  UserInfo user = 3;
 }
 
 // Token refresh
@@ -77,7 +85,15 @@ message AdminLoginRequest {
   string password = 2;
 }
 
+message AdminInfo {
+  int32 id = 1;
+  string name = 2;
+  string email = 3;
+  repeated string roles = 4;
+}
+
 message AdminLoginResponse {
   string accessToken = 1;
   string refreshToken = 2;
+  AdminInfo admin = 3;
 }

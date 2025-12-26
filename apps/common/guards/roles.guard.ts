@@ -16,7 +16,7 @@ interface JwtPayload {
   name: string;
   sub: number;
   email: string;
-  role: string;
+  role: string[];
   iat: number;
   exp: number;
 }
@@ -53,7 +53,11 @@ export class RolesGuard implements CanActivate {
         403
       );
     }
-    const hasRequiredRole = requiredRoles.some((role) => role === user.role);
+
+    const hasRequiredRole = requiredRoles.some((role) =>
+      user.role.includes(role)
+    );
+
     if (!hasRequiredRole) {
       throw new HttpException(
         {

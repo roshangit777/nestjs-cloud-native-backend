@@ -22,6 +22,7 @@ import { LoginUserDto } from "./dto/login.dto";
 import type { Request, Response } from "express";
 import { lastValueFrom } from "rxjs";
 import type {
+  AdminLoginToken,
   CurrentUserInfo,
   LoginToken,
 } from "./interfaces/LoginToken.interface";
@@ -61,6 +62,7 @@ export class AuthController implements OnModuleInit {
     return {
       message: "Logged in successfull",
       access_token: token.accessToken,
+      user: token.user,
     };
   }
 
@@ -109,16 +111,19 @@ export class AuthController implements OnModuleInit {
     @Body() data: LoginUserDto,
     @Res({ passthrough: true }) res: Response
   ) {
-    const token: { accessToken: string; refreshToken: string } =
-      await lastValueFrom(this.authServices.AdminLogin(data));
+    const token: AdminLoginToken = await lastValueFrom(
+      this.authServices.AdminLogin(data)
+    );
     //Set cookie securely
     res.cookie("refresh_token", token.refreshToken, {
       httpOnly: true, // can't be accessed by JS
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
+
     return {
       message: "Logged in successfull",
       access_token: token.accessToken,
+      admin: token.admin,
     };
   }
 

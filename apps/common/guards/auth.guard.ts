@@ -11,7 +11,7 @@ interface Payload {
   name: string;
   sub: number;
   email: string;
-  role: string;
+  role: string[];
 }
 interface AuthRequest extends Request {
   user?: Payload;

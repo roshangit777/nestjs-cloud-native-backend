@@ -7,11 +7,13 @@ import { JwtModule } from "@nestjs/jwt";
 /* import { EventsModule } from "src/events/events.module"; */
 import { AppModule } from "./app.module";
 import { ClientsModule, Transport } from "@nestjs/microservices";
+import { Roles } from "./entities/roles.entity";
+import { UserRoleMap } from "./entities/user-role-map.entity";
 
 @Module({
   imports: [
     AppModule,
-    TypeOrmModule.forFeature([Users]),
+    TypeOrmModule.forFeature([Users, Roles, UserRoleMap]),
     ClientsModule.register([
       {
         name: "LOGIN_HISTORY_RMQ",
