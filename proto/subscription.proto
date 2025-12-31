@@ -1,0 +1,124 @@
+syntax = "proto3";
+
+package subscription;
+
+service Subscriptionservice {
+    rpc SubscriptionOrder (SubscriptionOrderRequest) returns (SubscriptionOrderResponse);
+    rpc SubscriptionCheck (SubscriptionCheckRequest) returns (SubscriptionCheckResponse);
+    rpc GetAllSubscriber (GetAllSubscriberRequest) returns (GetAllSubscriberResponse);
+}
+
+
+message CustomerDetails {
+  int32 userId = 1;
+  string name = 2;
+  string email = 3;
+  string contact = 4;
+}
+
+message SubscriptionOrderRequest {
+  int32 amount = 1;
+  string currency = 2;
+  CustomerDetails customer = 3;
+}
+
+message NotifyInfo {
+  bool email=1;
+  bool sms=2;
+  bool whatsapp=3;
+}
+
+message SubscriptionOrderResponse {
+  bool acceptPartial = 1;
+  int32 amount = 2;
+  int32 amountPaid = 3;
+  int32 cancelledAt = 4;
+  int32 createdAt = 5;
+  string currency = 6;
+  CustomerDetails customer = 7;
+  string description = 8;
+  int32 expireBy = 9;
+  int32 expiredAt = 10;
+  int32 firstMinPartialAmount=11;
+  string id=12;
+  string notes=13;
+  NotifyInfo notify=14;
+  string payments=15;
+  string referenceId=16;
+  bool reminderEnable=17;
+  repeated string reminders=18;
+  string shortUrl=19;
+  string status=20;
+  int32 updatedAt=21;
+  string upiLink=22;
+  bool userId=23;
+  bool whatsappLink=24;
+}
+
+message SubscriptionCheckRequest {
+  string id = 1;
+}
+
+message TransactionDetails {
+  string rrn = 1;
+  string upiTransactionId = 2;
+}
+
+message UpiDetails {
+  string vpa = 1;
+  string flow = 2;
+}
+
+message SubscriptionCheckResponse {
+  string id=1;
+  string entity=2;
+  int32 amount=3;
+  string currency=4;
+  string status=5;
+  string orderId=6;
+  string invoiceId=7;
+  bool international=8;
+  string method=9;
+  int32 amountRefunded=10;
+  string refundStatus=11;
+  bool captured=12;
+  string description=13;
+  string cardId=14;
+  string bank=15;
+  string wallet=16;
+  string vpa=17;
+  string email=18;
+  string contact=19;
+  repeated string notes=20;
+  int32 fee=21;
+  int32 tax=22;
+  string errorCode=23;
+  string errorDescription=24;
+  string errorSource=25;
+  string errorStep=26;
+  string errorReason=27;
+  TransactionDetails acquirerData=28;
+  int32 createdAt=29;
+  UpiDetails upi=30;
+}
+
+message GetAllSubscriberRequest {}
+
+message Subscribers {
+  string id = 1;
+  int32 userId = 2;
+  string name = 3;
+  string email = 4;
+  string orderId = 5;
+  int32 price = 6;
+  string currency = 7;
+  string receipt = 8;
+  string status = 9;
+  bool paid = 10;
+  string createdAt = 11;
+  string updateAt = 12;
+}
+
+message GetAllSubscriberResponse {
+  repeated Subscribers subscriber = 1;
+}

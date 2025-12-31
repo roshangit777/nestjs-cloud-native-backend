@@ -97,6 +97,15 @@
         "tsConfigPath": "apps/purchase/tsconfig.app.json"
       }
     },
+    "subscription": {
+      "type": "application",
+      "root": "apps/subscription",
+      "entryFile": "main",
+      "sourceRoot": "apps/subscription/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/subscription/tsconfig.app.json"
+      }
+    },
     "video-process": {
       "type": "application",
       "root": "apps/video-process",

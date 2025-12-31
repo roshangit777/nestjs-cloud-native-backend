@@ -17,6 +17,7 @@ import { CurrentUser } from "apps/common/decorators/current-user.decorator";
 import { Roles } from "apps/common/decorators/roles.decorator";
 import { AuthGuard } from "apps/common/guards/auth.guard";
 import { RolesGuard } from "apps/common/guards/roles.guard";
+import { SubscriptionGuard } from "apps/common/guards/subscription.guard";
 
 interface AuthorData {
   name: string;
@@ -77,16 +78,22 @@ export class VideoUploadController implements OnModuleInit {
   }
 
   @Get("status/:id")
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, SubscriptionGuard)
   videoStatus(@Param("id") id: string) {
     return this.videoUplaodServices.VideoStatus({ id });
   }
 
-  @Get()
+  @Get("all-videos")
   @Roles(UserRole.ADMIN)
   @UseGuards(AuthGuard, RolesGuard)
   getAllVideos() {
     return this.videoUplaodServices.GetAllVideos({});
+  }
+
+  @Get("streaming-videos")
+  @UseGuards(AuthGuard, SubscriptionGuard)
+  getAllSteamingVideos() {
+    return this.videoUplaodServices.GetAllStramingVideos({});
   }
 
   @Delete("delete-files")

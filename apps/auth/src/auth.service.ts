@@ -246,6 +246,15 @@ export class AuthService {
     };
   }
 
+  async addUserType(userType: string) {
+    const newUserType = this.rolesRepository.create({
+      roleName: userType,
+    });
+
+    await this.rolesRepository.save(newUserType);
+    return { message: `New user type called ${userType} created successfully` };
+  }
+
   private async hashPassword(password: string): Promise<string> {
     return await bcrypt.hash(password, 10); // hashes the plain password
   }

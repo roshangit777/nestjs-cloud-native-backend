@@ -7,6 +7,7 @@ service VideoUploadService {
   rpc UploadConfirmation(UploadConfirmationRequest) returns (UploadConfirmationResponse);
   rpc VideoStatus(VideoStatusRequest) returns (VideoStatusResponse);
   rpc GetAllVideos (GetAllVideosRequest) returns (GetAllVideosResponse);
+  rpc GetAllStramingVideos (GetAllStramingVideosRequest) returns (GetAllStramingVideosResponse);
   rpc DeleteVideo (DeleteRequest) returns (DeleteResponse);
   rpc GetPurchasedFiles (GetPurchasedFilesRequest) returns (GetPurchasedFilesResponse);
 }
@@ -90,6 +91,12 @@ message VideoDetails {
 }
 
 message GetAllVideosResponse {
+  repeated VideoDetails result = 1;
+}
+
+message GetAllStramingVideosRequest {}
+
+message GetAllStramingVideosResponse {
   repeated VideoDetails result = 1;
 }
 

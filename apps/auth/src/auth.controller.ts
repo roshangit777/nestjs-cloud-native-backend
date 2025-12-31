@@ -33,4 +33,9 @@ export class AuthController {
   async refreshToken(@Payload() data: { token: string }) {
     return await this.authServices.refreshAndSetToken(data.token);
   }
+
+  @GrpcMethod("AuthService", "NewUserType")
+  async addUserTypeHandle(@Payload() data: { type: string }) {
+    return this.authServices.addUserType(data.type);
+  }
 }

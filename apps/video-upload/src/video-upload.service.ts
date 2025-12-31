@@ -67,6 +67,12 @@ export class VideoUploadService {
     return await this.videoUploadRepository.find({ withDeleted: true });
   }
 
+  async getAllStreamingVideos() {
+    return await this.videoUploadRepository.find({
+      where: { status: VideoStatus.READY },
+    });
+  }
+
   async softDelete(data: { id: string; userId: string | number }) {
     const video = await this.videoUploadRepository.findOne({
       where: { id: data.id },

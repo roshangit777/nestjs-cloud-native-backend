@@ -9,6 +9,7 @@ service AuthService {
   rpc Refresh (RefreshRequest) returns (RefreshResponse);
   rpc AdminRegister (AdminRegisterRequest) returns (AdminRegisterResponse);
   rpc AdminLogin (AdminLoginRequest) returns (AdminLoginResponse);
+  rpc NewUserType (NewUserTypeRequest) returns (NewUserTypeResponse);
 }
 
 // User model
@@ -96,4 +97,12 @@ message AdminLoginResponse {
   string accessToken = 1;
   string refreshToken = 2;
   AdminInfo admin = 3;
+}
+
+message NewUserTypeRequest {
+  string type = 1;
+}
+
+message NewUserTypeResponse {
+  string message = 1;
 }

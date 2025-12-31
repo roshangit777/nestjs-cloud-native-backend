@@ -16,3 +16,21 @@ export interface CreateOrder {
   customerName: string;
   customerNumber: string;
 }
+
+export interface SubscriptionOrder {
+  amount: number;
+  currency: string;
+  userId: string;
+}
+
+export interface CustomerDetails {
+  contact: number;
+  email: string;
+  name: string;
+}
+
+export interface SubscriptionPayment {
+  amount: number;
+  currency: string;
+  customer: CustomerDetails;
+}

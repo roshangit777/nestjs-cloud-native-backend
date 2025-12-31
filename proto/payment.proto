@@ -4,8 +4,11 @@ package payment;
 
 service PaymentService {
     rpc CreateOrder (CreateOrderRequest) returns (CreateOrderResponse);
+    rpc CreateSubscriptionOrder (CreateSubscriptionOrderRequest) returns (CreateSubscriptionOrderResponse);
+    rpc CreateSubscriptionPayment (CreateSubscriptionPaymentRequest) returns (CreateSubscriptionPaymentResponse);
     /* rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse); */
     rpc PaymentCheck(PaymentCheckRequest) returns (PaymentCheckResponse);
+    rpc SubscriptionPaymentCheck(SubscriptionPaymentCheckRequest) returns (SubscriptionPaymentCheckResponse);
 }
 
 message CreateOrderRequest {
@@ -39,9 +42,9 @@ message Notes {
 } */
 
 message CustomerDetails {
-  string name = 1;
   string contact = 2;
-  string email = 3;
+  string emaicl = 3;
+  string name = 1;
 }
 
 message NotifyInfo {
@@ -77,7 +80,52 @@ message CreateOrderResponse {
   bool whatsappLink=24;
 }
 
+message CreateSubscriptionOrderRequest {
+  int32 amount = 1;
+  string currency = 2;
+  string userId = 3;
+}
 
+message CreateSubscriptionOrderResponse {
+  int32 amount = 1;
+  string currency = 2;
+  string id = 3;
+  string receipt = 4;
+  string status= 5;
+}
+
+message CreateSubscriptionPaymentRequest {
+  int32 amount = 1;
+  string currency = 2;
+  CustomerDetails customer = 3;
+}
+
+message CreateSubscriptionPaymentResponse {
+  bool acceptPartial = 1;
+  int32 amount = 2;
+  int32 amountPaid = 3;
+  int32 cancelledAt = 4;
+  int32 createdAt = 5;
+  string currency = 6;
+  CustomerDetails customer = 7;
+  string description = 8;
+  int32 expireBy = 9;
+  int32 expiredAt = 10;
+  int32 firstMinPartialAmount=11;
+  string id=12;
+  string notes=13;
+  NotifyInfo notify=14;
+  string payments=15;
+  string referenceId=16;
+  bool reminderEnable=17;
+  repeated string reminders=18;
+  string shortUrl=19;
+  string status=20;
+  int32 updatedAt=21;
+  string upiLink=22;
+  bool userId=23;
+  bool whatsappLink=24;
+}
 
 /* message CreatePaymentRequest {
   int32 amount = 1;
@@ -129,6 +177,43 @@ message UpiDetails {
 }
 
 message PaymentCheckResponse {
+  string id=1;
+  string entity=2;
+  int32 amount=3;
+  string currency=4;
+  string status=5;
+  string orderId=6;
+  string invoiceId=7;
+  bool international=8;
+  string method=9;
+  int32 amountRefunded=10;
+  string refundStatus=11;
+  bool captured=12;
+  string description=13;
+  string cardId=14;
+  string bank=15;
+  string wallet=16;
+  string vpa=17;
+  string email=18;
+  string contact=19;
+  repeated string notes=20;
+  int32 fee=21;
+  int32 tax=22;
+  string errorCode=23;
+  string errorDescription=24;
+  string errorSource=25;
+  string errorStep=26;
+  string errorReason=27;
+  TransactionDetails acquirerData=28;
+  int32 createdAt=29;
+  UpiDetails upi=30;
+}
+
+message SubscriptionPaymentCheckRequest {
+  string data = 1;
+}
+
+message SubscriptionPaymentCheckResponse {
   string id=1;
   string entity=2;
   int32 amount=3;

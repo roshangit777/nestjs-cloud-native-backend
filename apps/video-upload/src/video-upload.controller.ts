@@ -41,6 +41,12 @@ export class VideoUploadController {
     return { result };
   }
 
+  @GrpcMethod("VideoUploadService", "GetAllStramingVideos")
+  async getAllStreamingVideosHandle() {
+    const result = await this.videoUploadService.getAllStreamingVideos();
+    return { result };
+  }
+
   @GrpcMethod("VideoUploadService", "DeleteVideo")
   async softDeleteHandle(
     @Payload() data: { id: string; userId: string | number }

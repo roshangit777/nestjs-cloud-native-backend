@@ -133,4 +133,10 @@ export class AuthController implements OnModuleInit {
     res.clearCookie("refresh_token");
     return { message: "Logged out successfully" };
   }
+
+  @UseGuards(AuthGuard)
+  @Post("add-user")
+  addNewUserType(@Body() data: string) {
+    return this.authServices.NewUserType({ type: data });
+  }
 }
