@@ -5,20 +5,42 @@ import { Repository } from "typeorm";
 import { RpcException } from "@nestjs/microservices";
 import { UserDetails } from "./interfaces/userDetails.interface";
 import { status } from "@grpc/grpc-js";
+import { AppLogger } from "apps/common/logger/logger.service";
 
 @Injectable()
 export class LoginHistoryModuleService {
   constructor(
     @InjectRepository(LoginHistory)
-    private loginHistoryRepository: Repository<LoginHistory>
+    private loginHistoryRepository: Repository<LoginHistory>,
+    private readonly logger: AppLogger
   ) {}
 
   async recordLogin(data: UserDetails): Promise<void> {
-    const login = this.loginHistoryRepository.create({
-      user: data.id,
-      userDetails: data,
+    this.logger.logEvent({
+      event: "LOGIN_HISTORY_SAVED",
+      status: "START",
+      userId: data.id,
     });
-    await this.loginHistoryRepository.save(login);
+    try {
+      const login = this.loginHistoryRepository.create({
+        user: data.id,
+        userDetails: data,
+      });
+      await this.loginHistoryRepository.save(login);
+      this.logger.logEvent({
+        event: "LOGIN_HISTORY_SAVED",
+        status: "SUCCESS",
+        userId: data.id,
+      });
+    } catch (error) {
+      this.logger.errorEvent({
+        event: "LOGIN_HISTORY_SAVED",
+        status: "FAILED",
+        userId: data.id,
+        error: error.message,
+        stack: error.stack,
+      });
+    }
   }
 
   async getAllUserLoginHistory(): Promise<any[]> {

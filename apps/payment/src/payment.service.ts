@@ -1,5 +1,5 @@
-import { Injectable } from "@nestjs/common";
-import { RpcException } from "@nestjs/microservices";
+import { Inject, Injectable } from "@nestjs/common";
+import { ClientProxy, RpcException } from "@nestjs/microservices";
 import { status } from "@grpc/grpc-js";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Orders, Payment } from "./entity/payment.entity";
@@ -20,7 +20,8 @@ export class PaymentService {
     @InjectRepository(Orders)
     private readonly ordersRepository: Repository<Orders>,
     @InjectRepository(Payment)
-    private readonly paymentRepository: Repository<Payment>
+    private readonly paymentRepository: Repository<Payment>,
+    @Inject("NOTIFICATION_RECORD_RMQ") private notificationClient: ClientProxy
   ) {
     this.testApiKey = process.env.Test_API_Key ?? "";
     this.testApiSecret = process.env.Test_Key_Secret ?? "";
@@ -216,7 +217,25 @@ export class PaymentService {
     );
 
     if (result.status === "captured" && result.captured === true) {
-      this.updateOrder(id);
+      try {
+        const payment: any = await this.paymentRepository.findOne({
+          where: { razorpayPaymentId: id },
+        });
+
+        await this.ordersRepository.update(
+          { id: payment.orderId },
+          { paid: true }
+        );
+      } catch (error) {
+        console.log(
+          "Error updating Status in the Payment check",
+          error.message
+        );
+        throw new RpcException({
+          code: status.INTERNAL,
+          message: "Failed to update order status",
+        });
+      }
     }
 
     this.sendEmail(id);
@@ -258,7 +277,7 @@ export class PaymentService {
     };
   }
 
-  async updateOrder(id: string) {
+  /* async updateOrder(id: string) {
     const payment = await this.paymentRepository.findOne({
       where: { razorpayPaymentId: id },
     });
@@ -266,7 +285,7 @@ export class PaymentService {
     if (!payment) return;
 
     await this.ordersRepository.update({ id: payment.orderId }, { paid: true });
-  }
+  } */
 
   async sendEmail(id: string) {
     try {

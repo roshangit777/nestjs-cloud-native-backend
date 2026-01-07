@@ -11,6 +11,7 @@ import { RpcException } from "@nestjs/microservices";
 import { status } from "@grpc/grpc-js";
 import { Roles } from "./entities/roles.entity";
 import { UserRoleMap } from "./entities/user-role-map.entity";
+import { asyncContext } from "apps/common/context/async-context";
 /* import { LoginHistory } from 'src/events/entity/login-history.entity'; */
 
 @Injectable()
@@ -21,8 +22,8 @@ export class AuthService {
     @InjectRepository(UserRoleMap)
     private userRoleMapRepository: Repository<UserRoleMap>,
     private jwtService: JwtService,
-    @Inject("LOGIN_HISTORY_RMQ") private loginHistroryClient: ClientProxy,
-    @Inject("NOTIFICATION_RECORD_RMQ") private notificationClient: ClientProxy
+    @Inject("LOGIN_HISTORY_RMQ") private loginHistroryClient: ClientProxy
+    /* @Inject("NOTIFICATION_RECORD_RMQ") private notificationClient: ClientProxy */
   ) {}
 
   async userRegister(userData: RegisterUserDto) {
@@ -137,7 +138,10 @@ export class AuthService {
       email: user.email,
       role: roles,
     };
-    this.loginHistroryClient.emit("record_login", loginData);
+    this.loginHistroryClient.emit("record_login", {
+      data: loginData,
+      correlationId: asyncContext.getStore()?.correlationId,
+    });
     /* this.loginHistroryClient.emit("history.create", user.id).subscribe({
       next: (res) => console.log("Login recorded:", res),
       error: (err) => console.error("Error recording login:", err),
@@ -233,7 +237,6 @@ export class AuthService {
       role: roles,
     };
     this.loginHistroryClient.emit("record_login", loginData);
-    this.notificationClient.emit("record_notification", user.id);
     return {
       accessToken,
       refreshToken,

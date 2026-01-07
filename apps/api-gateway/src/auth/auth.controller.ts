@@ -26,6 +26,8 @@ import type {
   CurrentUserInfo,
   LoginToken,
 } from "./interfaces/LoginToken.interface";
+import { LoginThrottlerGuard } from "apps/common/guards/login-throttler.guard";
+import { withCorrelation } from "apps/common/grpc/grpc-metadata";
 
 export enum UserRole {
   USER = "user",
@@ -48,12 +50,13 @@ export class AuthController implements OnModuleInit {
 
   /* @UseGuards(LoginThrottlerGuard) */
   @Post("user/login")
+  @UseGuards(LoginThrottlerGuard)
   async userLogin(
     @Body() data: LoginUserDto,
     @Res({ passthrough: true }) res: Response
   ) {
     let token: LoginToken = await lastValueFrom(
-      this.authServices.UserLogin(data)
+      this.authServices.UserLogin(data, withCorrelation())
     );
     res.cookie("refresh_token", token.refreshToken, {
       httpOnly: true, // can't be accessed by JS
@@ -107,6 +110,7 @@ export class AuthController implements OnModuleInit {
   }
 
   @Post("admin/login")
+  @UseGuards(LoginThrottlerGuard)
   async adminLogin(
     @Body() data: LoginUserDto,
     @Res({ passthrough: true }) res: Response

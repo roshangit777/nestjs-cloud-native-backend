@@ -4,6 +4,7 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import { GrpcToHttpInterceptor } from "../../common/filters/global.exception";
 import { Transport } from "@nestjs/microservices";
+import { AppLogger } from "apps/common/logger/logger.service";
 
 async function bootstrap() {
   const app = await NestFactory.create(ApiGatewayModule);
@@ -28,6 +29,9 @@ async function bootstrap() {
       queueOptions: { durable: true },
     },
   });
+
+  const logger = app.get(AppLogger);
+  app.useLogger(logger);
   await app.startAllMicroservices();
   await app.listen(process.env.port ?? 3000);
 }

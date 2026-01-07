@@ -15,6 +15,7 @@ async function bootstrap() {
       },
     }
   );
+
   await app.listen();
   console.log("Purchase gRPC microservice running on port 50058");
 }

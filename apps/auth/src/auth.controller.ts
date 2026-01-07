@@ -4,6 +4,7 @@ import { RegisterUserDto } from "./dto/register.dto";
 import { LoginUserDto } from "./dto/login.dto";
 /* import { LoginHistory } from "apps/events/entity/login-history.entity"; */
 import { GrpcMethod, Payload } from "@nestjs/microservices";
+import { Metadata } from "@grpc/grpc-js";
 
 @Controller()
 export class AuthController {

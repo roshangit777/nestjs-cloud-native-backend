@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { ApiGatewayController } from "./api-gateway.controller";
 import { ApiGatewayService } from "./api-gateway.service";
 import { AuthModule } from "./auth/auth.module";
@@ -13,6 +13,8 @@ import { PurchaseModule } from "./purchase/purchase.module";
 import { VideoUploadModule } from "./video-upload/video-upload.module";
 import { SubscriptionModule } from "./subscription/subscription.module";
 import { RedisModule } from "apps/libs/infra/redis/redis.module";
+import { ThrottlerModule } from "@nestjs/throttler";
+import { CorrelationMiddleware } from "./middlewares/correlation.middleware";
 
 @Module({
   imports: [
@@ -30,8 +32,20 @@ import { RedisModule } from "apps/libs/infra/redis/redis.module";
     VideoUploadModule,
     SubscriptionModule,
     RedisModule,
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000,
+          limit: 5,
+        },
+      ],
+    }),
   ],
   controllers: [ApiGatewayController],
   providers: [ApiGatewayService],
 })
-export class ApiGatewayModule {}
+export class ApiGatewayModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(CorrelationMiddleware).forRoutes("*");
+  }
+}

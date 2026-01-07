@@ -12,6 +12,7 @@ import {
 } from "./entity/subscription.entity";
 import { Repository } from "typeorm";
 import { RedisService } from "apps/libs/infra/redis/redis.service";
+import { AppLogger } from "apps/common/logger/logger.service";
 
 @Injectable()
 export class SubscriptionService implements OnModuleInit {
@@ -22,7 +23,8 @@ export class SubscriptionService implements OnModuleInit {
     private readonly subcriptionClient: Repository<Subscription>,
     @InjectRepository(SubscriptionPayment)
     private readonly subcriptionPaymentClient: Repository<SubscriptionPayment>,
-    private readonly redisClient: RedisService
+    private readonly redisClient: RedisService,
+    private readonly logger: AppLogger
   ) {}
   onModuleInit() {
     this.paymentServices = this.paymentClient.getService("PaymentService");
@@ -144,6 +146,11 @@ export class SubscriptionService implements OnModuleInit {
   }
 
   async sendEmail(id: string) {
+    this.logger.logEvent({
+      event: "SEND_EMAIL",
+      status: "START",
+      paymentId: id,
+    });
     try {
       const payment = await this.subcriptionPaymentClient.findOne({
         where: { razorpayPaymentId: id },
@@ -178,8 +185,20 @@ export class SubscriptionService implements OnModuleInit {
       ).catch(() => {
         // silently ignore errors
       });
+      this.logger.logEvent({
+        event: "SEND_EMAIL",
+        status: "SUCCESS",
+        userId: order.userId,
+      });
     } catch (err) {
       // never break main flow
+      this.logger.errorEvent({
+        event: "SEND_EMAIL",
+        status: "FAILED",
+        paymentId: id,
+        error: err.message,
+        stack: err.stack,
+      });
     }
   }
 }

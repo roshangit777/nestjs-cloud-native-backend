@@ -8,6 +8,7 @@ import { ClientProxy, RpcException } from "@nestjs/microservices";
 import { status } from "@grpc/grpc-js";
 import { exec } from "child_process";
 import path from "path";
+import { AppLogger } from "apps/common/logger/logger.service";
 
 @Injectable()
 export class VideoProcessService {
@@ -15,13 +16,20 @@ export class VideoProcessService {
     @InjectRepository(Video)
     private readonly videoUploadRepository: Repository<Video>,
     private readonly s3BucketService: S3Service,
-    @Inject("NOTIFICATION_RECORD_RMQ") private notificationClient: ClientProxy
+    @Inject("NOTIFICATION_RECORD_RMQ") private notificationClient: ClientProxy,
+    private readonly logger: AppLogger
   ) {}
   async videoProcessing(data: {
     id: string;
     fileName: string;
     userId: number | string;
   }) {
+    this.logger.logEvent({
+      event: "VIDEO_PROCESSING",
+      status: "START",
+      userId: data.userId,
+    });
+
     let filePath = "";
     let outputDir = "";
     try {
@@ -83,8 +91,12 @@ export class VideoProcessService {
         title: "Successfully Video Uploaded",
         message: `The Video with title "${data.fileName}" has been uploaded.`,
       });
+      this.logger.logEvent({
+        event: "VIDEO_PROCESSING",
+        status: "SUCCESS",
+        userId: data.userId,
+      });
     } catch (err) {
-      console.log("Error in video Process");
       await this.videoUploadRepository.update(
         {
           id: data.id,
@@ -94,6 +106,13 @@ export class VideoProcessService {
           uploadErrorReason: err.message,
         }
       );
+      this.logger.errorEvent({
+        event: "VIDEO_PROCESSING",
+        status: "FAILED",
+        userId: data.userId,
+        error: err.message,
+        stack: err.stack,
+      });
     } finally {
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
       if (fs.existsSync(outputDir))

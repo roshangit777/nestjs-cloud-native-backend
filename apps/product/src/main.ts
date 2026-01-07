@@ -2,6 +2,7 @@ import { NestFactory } from "@nestjs/core";
 import { ProductModule } from "./product.module";
 import { MicroserviceOptions, Transport } from "@nestjs/microservices";
 import { join } from "path";
+import { AppLogger } from "apps/common/logger/logger.service";
 
 async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
@@ -15,6 +16,7 @@ async function bootstrap() {
       },
     }
   );
+
   await app.listen();
   console.log("Product gRPC microservice running on port 50056");
 }

@@ -10,6 +10,7 @@ import { AppModule } from "./app.module";
 import { ClientsModule, Transport } from "@nestjs/microservices";
 import { join } from "path";
 import { RedisModule } from "apps/libs/infra/redis/redis.module";
+import { LoggerModule } from "apps/common/logger/logger.module";
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { RedisModule } from "apps/libs/infra/redis/redis.module";
       },
     ]),
     RedisModule,
+    LoggerModule,
   ],
   controllers: [SubscriptionController],
   providers: [SubscriptionService],

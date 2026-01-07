@@ -2,23 +2,27 @@ import { Injectable } from "@nestjs/common";
 import { ThrottlerException, ThrottlerGuard } from "@nestjs/throttler";
 
 @Injectable()
-export class LoginThrottlerGuard extends ThrottlerGuard {
+export class SubscriptionThrottlerGuard extends ThrottlerGuard {
   protected async getTracker(req: Record<string, any>): Promise<string> {
-    const email = ((await req.body?.email) as string) || "anonymous";
-    return `login-${email}`;
+    const userId = req.user?.id || req.ip;
+    console.log("userid from sub throttler:", userId);
+
+    return `subscription-${userId}`;
   }
-  /* // set limit to 5 attempts
+
+  // allow only 3 subscription attempts
   protected getLimit(): number {
-    return 5;
+    return 3;
   }
-  //time window time of 1 min
+
+  // within 10 minutes
   protected getTtl(): number {
     return 60;
-  } */
+  }
 
   protected throwThrottlingException(): Promise<void> {
     throw new ThrottlerException(
-      "Too many attempts. Please try again after 1 minute"
+      "Too many subscription attempts. Please try again later."
     );
   }
 }

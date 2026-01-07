@@ -2,6 +2,7 @@ import { Controller } from "@nestjs/common";
 import { LoginHistoryModuleService } from "./login-history.module.service";
 import { GrpcMethod, MessagePattern, Payload } from "@nestjs/microservices";
 import type { UserDetails } from "./interfaces/userDetails.interface";
+import { asyncContext } from "apps/common/context/async-context";
 
 @Controller()
 export class LoginHistoryModuleController {
@@ -11,8 +12,12 @@ export class LoginHistoryModuleController {
 
   /* @GrpcMethod("loginHistory", "AddLoginHistory") */
   @MessagePattern("record_login")
-  createHistory(@Payload() data: UserDetails) {
-    this.LoginHistorymoduleService.recordLogin(data);
+  createHistory(@Payload() payload: any) {
+    const { data, correlationId } = payload;
+
+    asyncContext.run({ correlationId }, () => {
+      this.LoginHistorymoduleService.recordLogin(data);
+    });
   }
 
   @GrpcMethod("loginHistory", "GetAllLoginHistory")

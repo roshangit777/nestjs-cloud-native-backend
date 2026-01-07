@@ -5,6 +5,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { Notification } from "./entity/notification.entity";
 import { AppModule } from "./app.module";
 import { ClientsModule, Transport } from "@nestjs/microservices";
+import { LoggerModule } from "apps/common/logger/logger.module";
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ClientsModule, Transport } from "@nestjs/microservices";
         },
       },
     ]),
+    LoggerModule,
   ],
   controllers: [NotificationController],
   providers: [NotificationService],

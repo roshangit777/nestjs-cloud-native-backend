@@ -14,6 +14,7 @@ import { CurrentUser } from "apps/common/decorators/current-user.decorator";
 import { type CurrentUserInfo } from "./interfaces/subscription";
 import { RolesGuard } from "apps/common/guards/roles.guard";
 import { Roles } from "apps/common/decorators/roles.decorator";
+import { SubscriptionThrottlerGuard } from "apps/common/guards/subscription-throttler.guard";
 
 export enum UserRole {
   USER = "user",
@@ -33,7 +34,7 @@ export class SubscriptionController implements OnModuleInit {
     );
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, SubscriptionThrottlerGuard)
   @Post("buy")
   handleOrderCreation(@CurrentUser() user: CurrentUserInfo) {
     return this.subscriptionServices.SubscriptionOrder({

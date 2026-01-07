@@ -2,6 +2,7 @@ import { NestFactory } from "@nestjs/core";
 import { NotificationModule } from "./notification.module";
 import { Transport } from "@nestjs/microservices";
 import { join } from "path";
+import { AppLogger } from "apps/common/logger/logger.service";
 
 async function bootstrap() {
   const app = await NestFactory.create(NotificationModule);
@@ -25,6 +26,9 @@ async function bootstrap() {
       },
     },
   });
+
+  const logger = app.get(AppLogger);
+  app.useLogger(logger);
 
   await app.startAllMicroservices();
   console.log("Notification service is running on 50055 grpc port");

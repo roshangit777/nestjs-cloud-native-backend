@@ -6,6 +6,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { Video } from "./entity/videoUpload.entity";
 import { S3Module } from "./AWS/aws-s3.module";
 import { ClientsModule, Transport } from "@nestjs/microservices";
+import { LoggerModule } from "apps/common/logger/logger.module";
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { ClientsModule, Transport } from "@nestjs/microservices";
         },
       },
     ]),
+    LoggerModule,
   ],
   controllers: [VideoProcessController],
   providers: [VideoProcessService],

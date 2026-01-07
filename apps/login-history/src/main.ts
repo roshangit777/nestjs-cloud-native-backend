@@ -2,6 +2,8 @@ import { NestFactory } from "@nestjs/core";
 import { LoginHistoryModule } from "./login-history.module.module";
 import { Transport } from "@nestjs/microservices";
 import { join } from "path";
+import { AppLogger } from "apps/common/logger/logger.service";
+import { GrpcCorrelationInterceptor } from "apps/common/interceptors/grpc-correlation.interceptor";
 
 async function bootstrap() {
   const app = await NestFactory.create(LoginHistoryModule);
@@ -26,6 +28,11 @@ async function bootstrap() {
       },
     },
   });
+
+  app.useGlobalInterceptors(new GrpcCorrelationInterceptor());
+  /* app.useGlobalInterceptors(new CorrelationInterceptor()); */
+  const logger = app.get(AppLogger);
+  app.useLogger(logger);
   await app.startAllMicroservices();
   console.log("Post gRPC microservice running on port 50054");
 }
